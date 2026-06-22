@@ -74,12 +74,96 @@
     return Math.min(W,H) / (2*(maxMoon + p.r + 36)) * 0.82;
   }
 
+  /* ---------- night-sky background (prebaked to an offscreen canvas) ---------- */
+  const bgCanvas = document.createElement('canvas');
+  const bgctx = bgCanvas.getContext('2d');
+
+  // sparse scattered stars (fixed fractional positions so they never twinkle/jump)
+  const scatter = [];
+  for(let i=0;i<150;i++){
+    scatter.push({ fx:Math.random(), fy:Math.random(), r:0.3+Math.random()*0.9, a:0.04+Math.random()*0.12 });
+  }
+
+  // real constellation asterisms — stars in local 0..1 space (y down), edges by index.
+  // placed at fractional anchors, faintly, well away from the centre where the sun sits.
+  const CONSTELLATIONS = [
+    { // Orion
+      ax:0.15, ay:0.26, scale:0.16, rot:0.05,
+      stars:[[0.30,0.15],[0.62,0.18],[0.40,0.50],[0.50,0.53],[0.60,0.56],[0.34,0.88],[0.70,0.85]],
+      edges:[[0,1],[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]
+    },
+    { // Ursa Major (Big Dipper)
+      ax:0.83, ay:0.19, scale:0.21, rot:-0.06,
+      stars:[[0.62,0.20],[0.62,0.42],[0.45,0.47],[0.46,0.27],[0.32,0.30],[0.18,0.37],[0.05,0.47]],
+      edges:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]]
+    },
+    { // Cassiopeia (W)
+      ax:0.80, ay:0.80, scale:0.17, rot:0.04,
+      stars:[[0.05,0.30],[0.28,0.62],[0.50,0.25],[0.72,0.64],[0.95,0.28]],
+      edges:[[0,1],[1,2],[2,3],[3,4]]
+    },
+    { // Cygnus (Northern Cross)
+      ax:0.17, ay:0.76, scale:0.16, rot:-0.05,
+      stars:[[0.50,0.05],[0.50,0.55],[0.50,0.95],[0.15,0.50],[0.85,0.45]],
+      edges:[[0,1],[1,2],[3,1],[1,4]]
+    },
+    { // Lyra
+      ax:0.50, ay:0.11, scale:0.09, rot:0.0,
+      stars:[[0.50,0.08],[0.35,0.45],[0.64,0.50],[0.40,0.88],[0.69,0.92]],
+      edges:[[0,1],[0,2],[1,3],[2,4],[3,4]]
+    }
+  ];
+
+  function buildBackground(){
+    if(!W || !H) return;
+    bgCanvas.width = W*DPR; bgCanvas.height = H*DPR;
+    bgctx.setTransform(DPR,0,0,DPR,0,0);
+
+    // deep desaturated blue night sky
+    const g = bgctx.createRadialGradient(W*0.5, H*0.42, 0, W*0.5, H*0.5, Math.max(W,H)*0.85);
+    g.addColorStop(0,    '#0d1626');
+    g.addColorStop(0.55, '#0a101e');
+    g.addColorStop(1,    '#05080f');
+    bgctx.fillStyle = g; bgctx.fillRect(0,0,W,H);
+
+    // scattered faint stars
+    scatter.forEach(s=>{
+      bgctx.beginPath();
+      bgctx.arc(s.fx*W, s.fy*H, s.r, 0, Math.PI*2);
+      bgctx.fillStyle = 'rgba(205,214,230,'+s.a+')';
+      bgctx.fill();
+    });
+
+    // constellations (very, very faint lines + slightly brighter star dots)
+    const minDim = Math.min(W,H);
+    CONSTELLATIONS.forEach(c=>{
+      const size = c.scale*minDim, ax = c.ax*W, ay = c.ay*H;
+      const cos = Math.cos(c.rot||0), sin = Math.sin(c.rot||0);
+      const pts = c.stars.map(([lx,ly])=>{
+        const dx = lx-0.5, dy = ly-0.5;
+        return { x: ax + (dx*cos - dy*sin)*size, y: ay + (dx*sin + dy*cos)*size };
+      });
+      bgctx.strokeStyle = 'rgba(150,170,205,0.06)';
+      bgctx.lineWidth = 1;
+      bgctx.beginPath();
+      c.edges.forEach(([i,j])=>{ bgctx.moveTo(pts[i].x,pts[i].y); bgctx.lineTo(pts[j].x,pts[j].y); });
+      bgctx.stroke();
+      pts.forEach(p=>{
+        bgctx.beginPath();
+        bgctx.arc(p.x, p.y, 1.2, 0, Math.PI*2);
+        bgctx.fillStyle = 'rgba(214,222,238,0.28)';
+        bgctx.fill();
+      });
+    });
+  }
+
   function resize(){
     DPR = Math.min(window.devicePixelRatio||1, 2);
     W = window.innerWidth; H = window.innerHeight;
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
     computeFit();
+    buildBackground();
     if(mode==='system'){ target.scale=fitScale; target.cx=0; target.cy=0; }
     else if(focused){ target.scale = planetFocusScale(focused); }
   }
