@@ -16,16 +16,15 @@
 
 const SITE = {
   sun: {
-    label: 'Your Name',   // <- shown under the sun. Put your name here.
+    label: 'Talia Honikman',   // <- shown under the sun
     desc:  'click to read more.',
     color: '#c47a2f',
     r: 46,
     about: {
       kicker: '',          // optional small line above the name; leave '' to hide
-      name: 'Your Name',
+      name: 'Talia Honikman',
       paragraphs: [
-        'A placeholder summary of me — the one paragraph that explains why these particular planets orbit the same sun. What is the through-line? The instinct, question, or habit of mind that shows up whether you are reading about implicature, training a model, or pulling a roll of film.',
-        'A second placeholder line for the practical version: who you are, what you do, and where someone should start. Replace all of this later.'
+        "I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, and food. Human communication forms are inherently lossy; for me this is what makes them so fascinating!"
       ],
       links: [
         { label: 'email',     href: '#' },
