@@ -412,7 +412,9 @@
   // fill the About card from content.js
   function buildAbout(){
     const a = SITE.sun.about || {};
-    aboutPanel.querySelector('.a-kicker').textContent = a.kicker || SITE.sun.label || '';
+    const kickerEl = aboutPanel.querySelector('.a-kicker');
+    kickerEl.textContent = a.kicker || '';
+    kickerEl.style.display = a.kicker ? '' : 'none';
     aboutPanel.querySelector('.a-name').textContent = a.name || '';
     const bodyEl = aboutPanel.querySelector('.a-body');
     bodyEl.innerHTML = '';

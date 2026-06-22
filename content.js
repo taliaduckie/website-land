@@ -16,12 +16,12 @@
 
 const SITE = {
   sun: {
-    label: 'the connective tissue',
-    desc:  'the idea everything else circles — click to read more.',
+    label: 'Your Name',   // <- shown under the sun. Put your name here.
+    desc:  'click to read more.',
     color: '#c47a2f',
     r: 46,
     about: {
-      kicker: 'the connective tissue',
+      kicker: '',          // optional small line above the name; leave '' to hide
       name: 'Your Name',
       paragraphs: [
         'A placeholder summary of me — the one paragraph that explains why these particular planets orbit the same sun. What is the through-line? The instinct, question, or habit of mind that shows up whether you are reading about implicature, training a model, or pulling a roll of film.',
