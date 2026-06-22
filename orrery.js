@@ -1,228 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>the connective tissue</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-<style>
-  :root{
-    --ink:#e9ddcc;
-    --ink-dim:#b6a48d;
-    --ink-faint:#8a7a64;
-    --panel:rgba(28,20,13,0.92);
-    --line:rgba(150,120,80,0.30);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;overflow:hidden;background:#16100b;}
-  body{
-    font-family:"Libre Baskerville",Georgia,serif;
-    color:var(--ink);
-    -webkit-font-smoothing:antialiased;
-    cursor:default;
-    user-select:none;
-    -webkit-user-select:none;
-  }
-  #stage{position:fixed;inset:0;display:block;touch-action:none;}
-
-  /* hover description tooltip */
-  #tip{
-    position:fixed;
-    pointer-events:none;
-    max-width:min(78vw,360px);
-    padding:10px 14px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:3px;
-    transform:translate(-50%,-100%);
-    opacity:0;
-    transition:opacity .18s ease;
-    z-index:20;
-    backdrop-filter:blur(2px);
-  }
-  #tip.show{opacity:1;}
-  #tip .t-name{
-    font-family:"IM Fell English",serif;
-    font-size:18px;
-    letter-spacing:.3px;
-    color:var(--ink);
-    margin-bottom:2px;
-  }
-  #tip .t-desc{
-    font-size:12.5px;
-    line-height:1.45;
-    color:var(--ink-dim);
-    font-style:italic;
-  }
-
-  /* moon detail card */
-  #moonPanel{
-    position:fixed;
-    width:min(86vw,340px);
-    padding:20px 22px 18px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:4px;
-    z-index:30;
-    opacity:0;
-    pointer-events:none;
-    transform:translateY(8px);
-    transition:opacity .22s ease, transform .22s ease;
-    box-shadow:0 18px 50px -20px rgba(0,0,0,.8);
-  }
-  #moonPanel.show{opacity:1;pointer-events:auto;transform:translateY(0);}
-  #moonPanel .m-domain{
-    font-size:10.5px;
-    letter-spacing:2.2px;
-    text-transform:uppercase;
-    color:var(--ink-faint);
-    margin-bottom:8px;
-  }
-  #moonPanel .m-title{
-    font-family:"IM Fell English",serif;
-    font-size:25px;
-    line-height:1.15;
-    color:var(--ink);
-    margin-bottom:12px;
-  }
-  #moonPanel .m-body{
-    font-size:13.5px;
-    line-height:1.6;
-    color:var(--ink-dim);
-    margin-bottom:16px;
-  }
-  #moonPanel .m-link{
-    font-family:"IM Fell English",serif;
-    font-size:15px;
-    color:#d9985a;
-    text-decoration:none;
-    border-bottom:1px solid rgba(217,152,90,.4);
-    padding-bottom:1px;
-  }
-  #moonPanel .m-link:hover{color:#eab06f;border-color:rgba(234,176,111,.7);}
-  #moonPanel .m-close{
-    position:absolute;top:10px;right:12px;
-    width:26px;height:26px;line-height:24px;text-align:center;
-    color:var(--ink-faint);font-size:18px;cursor:pointer;
-    background:none;border:none;font-family:serif;
-  }
-  #moonPanel .m-close:hover{color:var(--ink);}
-
-  /* about / summary card (the sun) */
-  #aboutPanel{
-    position:fixed;
-    left:50%;top:50%;
-    transform:translate(-50%,calc(-50% + 10px));
-    width:min(90vw,460px);
-    padding:30px 34px 26px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:4px;
-    z-index:35;
-    opacity:0;pointer-events:none;
-    transition:opacity .26s ease, transform .26s ease;
-    box-shadow:0 24px 64px -22px rgba(0,0,0,.85);
-  }
-  #aboutPanel.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%);}
-  #aboutPanel .a-kicker{
-    font-size:10.5px;letter-spacing:2.4px;text-transform:uppercase;
-    color:#d9985a;margin-bottom:10px;
-  }
-  #aboutPanel .a-name{
-    font-family:"IM Fell English",serif;
-    font-weight:400;font-size:34px;line-height:1.1;
-    color:var(--ink);margin-bottom:16px;
-  }
-  #aboutPanel .a-body p{
-    font-size:14px;line-height:1.65;color:var(--ink-dim);margin-bottom:12px;
-  }
-  #aboutPanel .a-links{
-    display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;
-  }
-  #aboutPanel .a-link{
-    font-family:"IM Fell English",serif;font-size:15px;
-    color:#d9985a;text-decoration:none;
-    border-bottom:1px solid rgba(217,152,90,.4);padding-bottom:1px;
-  }
-  #aboutPanel .a-link:hover{color:#eab06f;border-color:rgba(234,176,111,.7);}
-  #aboutPanel .a-close{
-    position:absolute;top:12px;right:14px;
-    width:26px;height:26px;line-height:24px;text-align:center;
-    color:var(--ink-faint);font-size:18px;cursor:pointer;
-    background:none;border:none;font-family:serif;
-  }
-  #aboutPanel .a-close:hover{color:var(--ink);}
-
-  /* back button */
-  #backBtn{
-    position:fixed;top:22px;left:24px;z-index:25;
-    font-family:"IM Fell English",serif;
-    font-size:16px;letter-spacing:.4px;
-    color:var(--ink-dim);
-    background:rgba(28,20,13,.55);
-    border:1px solid var(--line);
-    border-radius:3px;
-    padding:8px 14px;
-    cursor:pointer;
-    opacity:0;pointer-events:none;
-    transition:opacity .3s ease,color .2s ease;
-    backdrop-filter:blur(2px);
-  }
-  #backBtn.show{opacity:1;pointer-events:auto;}
-  #backBtn:hover{color:var(--ink);}
-
-  /* ambient hint */
-  #hint{
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    z-index:15;
-    font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;
-    color:var(--ink-faint);
-    opacity:.7;
-    transition:opacity .4s ease;
-    text-align:center;
-    pointer-events:none;
-    white-space:nowrap;
-  }
-  @media (max-width:560px){
-    #hint{font-size:9.5px;letter-spacing:1.1px;}
-  }
-</style>
-</head>
-<body>
-  <canvas id="stage"></canvas>
-
-  <div id="tip"><div class="t-name"></div><div class="t-desc"></div></div>
-
-  <div id="moonPanel">
-    <button class="m-close" aria-label="close">&times;</button>
-    <div class="m-domain"></div>
-    <div class="m-title"></div>
-    <div class="m-body"></div>
-    <a class="m-link" href="#">open &rarr;</a>
-  </div>
-
-  <div id="aboutPanel">
-    <button class="a-close" aria-label="close">&times;</button>
-    <div class="a-kicker">the connective tissue</div>
-    <h1 class="a-name">Your Name</h1>
-    <div class="a-body">
-      <p>A placeholder summary of me &mdash; the one paragraph that explains why these particular planets orbit the same sun. What is the through-line? The instinct, question, or habit of mind that shows up whether you are reading about implicature, training a model, or pulling a roll of film.</p>
-      <p>A second placeholder line for the practical version: who you are, what you do, and where someone should start. Replace all of this later.</p>
-    </div>
-    <div class="a-links">
-      <a href="#" class="a-link">email &rarr;</a>
-      <a href="#" class="a-link">cv &rarr;</a>
-      <a href="#" class="a-link">elsewhere &rarr;</a>
-    </div>
-  </div>
-
-  <button id="backBtn">&larr; pull back</button>
-  <div id="hint">hover to pause &nbsp;·&nbsp; click a planet to enter &nbsp;·&nbsp; esc to pull back</div>
-
-<script>
 "use strict";
+/* orrery.js, which reads the SITE object from content.js.
+   content should be changed elsewhere tho. */
 (function(){
   const canvas = document.getElementById('stage');
   const ctx = canvas.getContext('2d');
@@ -246,75 +24,23 @@
   function darken(c,f){ return {r:c.r*(1-f), g:c.g*(1-f), b:c.b*(1-f)}; }
   function mix(a,b,t){ return {r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t}; }
 
-  /* ---------- content ---------- */
+  /* ---------- build runtime model from content.js (SITE) ---------- */
   const SUN = {
-    label:'the connective tissue',
-    desc:'the idea everything else circles — click to read more.',
-    color: hexRgb('#c47a2f'),
-    r: 46
+    label: SITE.sun.label,
+    desc:  SITE.sun.desc,
+    color: hexRgb(SITE.sun.color),
+    r:     SITE.sun.r
   };
 
-  function moon(name, dr, period, e, rot, body){
-    return { name, dr, period, e, rot, body, angle: rot, r: 7.2 + dr*0.012 };
-  }
-
-  // planets: varied sizes (emphasis), orbits, eccentricities, periods (slow, all different)
-  const PLANETS = [
-    {
-      name:'formal pragmatics',
-      desc:'how meaning outruns what is literally said.',
-      color: hexRgb('#9b3d34'), r:27,
-      a:175, e:0.09, period:74, rot:0.35,
-      moons:[
-        moon('implicature & inference', 50, 17, 0.06, 0.4, 'A placeholder note on how listeners reconstruct intended meaning from sparse signals.'),
-        moon('speech acts', 74, 25, 0.12, 2.1, 'Placeholder: doing things with words — promises, requests, the force behind a sentence.'),
-        moon('the semantics–pragmatics line', 96, 34, 0.08, 4.0, 'Placeholder essay on where encoded meaning ends and context takes over.')
-      ]
-    },
-    {
-      name:'AI safety',
-      desc:'keeping capable systems pointed the right way.',
-      color: hexRgb('#5d7a44'), r:31, // largest — strong emphasis
-      a:262, e:0.13, period:108, rot:1.15,
-      moons:[
-        moon('interpretability notes', 52, 19, 0.05, 1.0, 'Placeholder: reading the internals of a model and trying to say what it is doing.'),
-        moon('incentives & alignment', 78, 28, 0.14, 3.0, 'Placeholder on objectives, proxies, and the gap between them.'),
-        moon('evaluation design', 100, 37, 0.09, 5.1, 'Placeholder: how to measure what we actually care about.')
-      ]
-    },
-    {
-      name:'food science',
-      desc:'the chemistry and craft of what we eat.',
-      color: hexRgb('#b06a2c'), r:21,
-      a:348, e:0.06, period:152, rot:2.05,
-      moons:[
-        moon('fermentation log', 48, 16, 0.07, 0.7, 'Placeholder: notes from jars on the counter — time, salt, and microbes.'),
-        moon('maillard & heat', 72, 26, 0.10, 2.6, 'Placeholder on browning, flavor, and the geometry of a good sear.')
-      ]
-    },
-    {
-      name:'film photography',
-      desc:'light, grain, and the patience of analog.',
-      color: hexRgb('#356b6b'), r:18,
-      a:432, e:0.16, period:188, rot:2.75,
-      moons:[
-        moon('velvia diaries', 50, 18, 0.08, 1.4, 'Placeholder: saturated transparencies and the color of late afternoon.'),
-        moon('portra vs. ektar', 74, 27, 0.13, 3.5, 'Placeholder comparison of two stocks and the moods they carry.'),
-        moon('darkroom notes', 96, 35, 0.06, 5.6, 'Placeholder: timing, temperature, and the smell of fixer.')
-      ]
-    },
-    {
-      name:'writing',
-      desc:'essays that tie the other threads together.',
-      color: hexRgb('#7a3f57'), r:24,
-      a:520, e:0.10, period:232, rot:3.45,
-      moons:[
-        moon('essays', 50, 17, 0.07, 0.9, 'Placeholder for longer pieces — the connective tissue made explicit.'),
-        moon('fragments', 76, 27, 0.11, 3.2, 'Placeholder: half-thoughts kept until they find their planet.'),
-        moon('reading list', 98, 36, 0.05, 5.4, 'Placeholder: what is on the desk right now.')
-      ]
-    }
-  ];
+  const PLANETS = SITE.planets.map(p=>({
+    name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r,
+    a:p.a, e:p.e, period:p.period, rot:p.rot,
+    moons: p.moons.map(m=>({
+      name:m.name, dr:m.dr, period:m.period, e:m.e, rot:m.rot,
+      body:m.body, href:m.href||'#',
+      angle:m.rot, r: 7.2 + m.dr*0.012
+    }))
+  }));
 
   // precompute orbit semi-minor + initial angles + a slightly tinted material color for moons
   PLANETS.forEach(p=>{
@@ -330,7 +56,7 @@
     });
   });
 
-  /* ---------- viewport / camera shit ---------- */
+  /* ---------- viewport / camera ---------- */
   let W=0, H=0, DPR=1;
   let fitScale=1;
   const view = { scale:1, cx:0, cy:0 };          // current
@@ -374,7 +100,7 @@
   let hoverObj = null;          // {type, obj, parent?}
   let lastT = performance.now();
 
-  /* get doze good celestial bodies in there */
+  /* ---------- drawing a material body (no glow) ---------- */
   function drawBody(x,y,r,base,alpha){
     if(alpha<=0) return;
     // light direction = toward sun (origin)
@@ -390,7 +116,7 @@
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
     ctx.fillStyle = g; ctx.fill();
 
-    // cool terminator shadow on the far side, clipped tho 
+    // cool terminator shadow on the far side, clipped (material, not glowy)
     ctx.save();
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.clip();
     const shx = x - nx*r*0.55, shy = y - ny*r*0.55;
@@ -606,15 +332,13 @@
   }
 
   /* ---------- tooltip ---------- */
-  let tipAnchor = null;
   function showTip(obj){
     tipName.textContent = obj.name || obj.label || '';
     tipDesc.textContent = obj.desc || '';
-    tipEl.classList.toggle('has-desc', !!obj.desc);
     tipDesc.style.display = obj.desc ? '' : 'none';
     tipEl.classList.add('show');
   }
-  function hideTip(){ tipEl.classList.remove('show'); tipAnchor=null; }
+  function hideTip(){ tipEl.classList.remove('show'); }
   function positionTip(){
     if(!hoverObj) return;
     const o = hoverObj.obj;
@@ -665,7 +389,7 @@
     mDomain.textContent = parent.name;
     mTitle.textContent = m.name;
     mBody.textContent = m.body;
-    mLink.href = '#'; // placeholder link
+    mLink.href = m.href || '#';
     moonPanel.classList.add('show');
     // position card near moon, clamped to viewport
     const s = toScreen(m.wx,m.wy);
@@ -679,11 +403,32 @@
   }
   function closeMoon(){ moonPanel.classList.remove('show'); }
   moonPanel.querySelector('.m-close').addEventListener('click', closeMoon);
-  mLink.addEventListener('click', e=>{ e.preventDefault(); /* placeholder */ });
+  mLink.addEventListener('click', e=>{ if(mLink.getAttribute('href')==='#') e.preventDefault(); });
 
   function openAbout(){ closeMoon(); aboutPanel.classList.add('show'); hintEl.style.opacity='0'; setHover(null); }
   function closeAbout(){ aboutPanel.classList.remove('show'); if(mode==='system') hintEl.style.opacity='0.7'; }
   aboutPanel.querySelector('.a-close').addEventListener('click', closeAbout);
+
+  // fill the About card from content.js
+  function buildAbout(){
+    const a = SITE.sun.about || {};
+    aboutPanel.querySelector('.a-kicker').textContent = a.kicker || SITE.sun.label || '';
+    aboutPanel.querySelector('.a-name').textContent = a.name || '';
+    const bodyEl = aboutPanel.querySelector('.a-body');
+    bodyEl.innerHTML = '';
+    (a.paragraphs||[]).forEach(txt=>{
+      const p = document.createElement('p'); p.textContent = txt; bodyEl.appendChild(p);
+    });
+    const linksEl = aboutPanel.querySelector('.a-links');
+    linksEl.innerHTML = '';
+    (a.links||[]).forEach(l=>{
+      const el = document.createElement('a');
+      el.className = 'a-link'; el.href = l.href || '#';
+      el.innerHTML = l.label + ' &rarr;';
+      if((l.href||'#')==='#') el.addEventListener('click', e=>e.preventDefault());
+      linksEl.appendChild(el);
+    });
+  }
 
   function handleClick(sx,sy){
     const hit = hitTest(sx,sy);
@@ -758,18 +503,12 @@
 
   /* ---------- boot ---------- */
   function boot(){
+    buildAbout();
     resize();
     view.scale = fitScale; target.scale = fitScale;
     view.cx=0; view.cy=0; target.cx=0; target.cy=0;
     lastT = performance.now();
     requestAnimationFrame(frame);
   }
-  if(document.fonts && document.fonts.ready){
-    // start immediately; redraw happens every frame so fonts pop in cleanly
-    document.fonts.ready.then(()=>{});
-  }
   boot();
 })();
-</script>
-</body>
-</html>
