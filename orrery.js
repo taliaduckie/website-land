@@ -326,6 +326,12 @@
 
   function drawBody(x,y,r,base,alpha,opts){
     if(alpha<=0) return;
+    // soft colored bloom around the galactic bods 
+    const gl = ctx.createRadialGradient(x,y, r*0.82, x,y, r*1.95);
+    gl.addColorStop(0, rgba(lighten(base,0.22), 0.17*alpha));
+    gl.addColorStop(1, rgba(lighten(base,0.22), 0));
+    ctx.beginPath(); ctx.arc(x,y, r*1.95, 0, Math.PI*2);
+    ctx.fillStyle = gl; ctx.fill();
     // light direction = toward sun (origin)
     let dx = -x, dy = -y, len = Math.hypot(dx,dy)||1;
     const nx = dx/len, ny = dy/len;
@@ -532,31 +538,26 @@
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
     }
 
-    // planet labels
+    // planet labels — only the hovered planet (paused) or the focused planet
     PLANETS.forEach(p=>{
-      if(focused && p!==focused){
-        if(otherAlpha<=0.04) return;
-      }
-      const s = toScreen(p.wx,p.wy);
       const hovered = hoverObj && hoverObj.obj===p;
-      let a;
+      let a = 0;
       if(p===focused) a = prog;
-      else a = otherAlpha * (hovered ? 0.98 : 0.34);
+      else if(hovered) a = otherAlpha;
       if(a<=0.03) return;
-      ctx.font = (hovered?'700 ':'400 ') + Math.round(15 + p.r*0.10) + 'px "IM Fell English", serif';
+      const s = toScreen(p.wx,p.wy);
+      ctx.font = '700 ' + Math.round(15 + p.r*0.10) + 'px "IM Fell English", serif';
       ctx.fillStyle = rgba(hexRgb('#e9ddcc'), a);
       ctx.fillText(p.name, s.x, s.y + p.r*view.scale + 10);
     });
 
-    // moon labels (only when focused)
-    if(focused && prog>0.25){
-      focused.moons.forEach(m=>{
-        const s = toScreen(m.wx,m.wy);
-        const hovered = hoverObj && hoverObj.obj===m;
-        ctx.font = (hovered?'700 ':'400 ') + '13px "IM Fell English", serif';
-        ctx.fillStyle = rgba(hexRgb('#d9cbb6'), prog*(hovered?1:0.66));
-        ctx.fillText(m.name, s.x, s.y + m.r*view.scale + 8);
-      });
+    // moon labels — only the hovered (paused) moon
+    if(focused && prog>0.25 && hoverObj && hoverObj.type==='moon'){
+      const m = hoverObj.obj;
+      const s = toScreen(m.wx,m.wy);
+      ctx.font = '700 13px "IM Fell English", serif';
+      ctx.fillStyle = rgba(hexRgb('#d9cbb6'), prog);
+      ctx.fillText(m.name, s.x, s.y + m.r*view.scale + 8);
     }
   }
 

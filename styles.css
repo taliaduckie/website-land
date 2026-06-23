@@ -22,15 +22,19 @@ body{
   position:fixed;
   pointer-events:none;
   max-width:min(78vw,360px);
-  padding:10px 14px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:3px;
+  padding:14px 22px 16px;
+  background:radial-gradient(125% 150% at 50% 42%, rgba(16,20,32,0.62), rgba(10,14,24,0) 78%);
+  border:none;
+  border-radius:0;
   transform:translate(-50%,-100%);
   opacity:0;
-  transition:opacity .18s ease;
+  transition:opacity .22s ease;
   z-index:20;
-  backdrop-filter:blur(2px);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+  /* feather the whole card (incl. the backdrop blur) so it reads as a soft pool of sky */
+  -webkit-mask-image:radial-gradient(120% 145% at 50% 44%, #000 48%, transparent 100%);
+  mask-image:radial-gradient(120% 145% at 50% 44%, #000 48%, transparent 100%);
 }
 #tip.show{opacity:1;}
 #tip .t-name{
