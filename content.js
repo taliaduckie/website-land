@@ -84,6 +84,18 @@ const SITE = {
         { name: 'fragments',    dr: 76, period: 27, e: 0.11, rot: 3.2, href: '#', body: 'Placeholder: half-thoughts kept until they find their planet.' },
         { name: 'reading list', dr: 98, period: 36, e: 0.05, rot: 5.4, href: '#', body: 'Placeholder: what is on the desk right now.' }
       ]
+    },
+    {
+      name: 'violin',
+      desc: 'has-been classically trained',
+      color: '#b56e84', r: 22, a: 625, e: 0.08, period: 268, rot: 0.8,
+      // ring!!!! inner/outer are multiples of the planet radius, tilt squashes
+      // the ellipse (0 = edge-on, 1 = face-on), angle tips the ring in radians
+      ring: { inner: 1.72, outer: 2.12, tilt: 0.34, angle: -0.55, color: '#c2ad88' },
+      moons: [
+        { name: 'etudes',          dr: 50, period: 18, e: 0.07, rot: 0.6, href: '#', body: 'Placeholder: scales, Kreutzer, and the long years of repetition.' },
+        { name: 'the long hiatus', dr: 78, period: 28, e: 0.11, rot: 3.0, href: '#', body: 'Placeholder: the case closed for a while — what classical training leaves behind.' }
+      ]
     }
   ]
 };

@@ -17,7 +17,7 @@
   const hintEl = document.getElementById('hint');
 
   /* ---------- color helpers (muted velvia-adjacent palette) ---------- */
-  const CYAN_SHADOW = {r:22, g:48, b:56}; // slightly cyan shadow tint
+  const SHADOW = {r:34, g:28, b:25}; // neutral (faintly warm) shadow — keeps bodies material, not cool/recessed
   function hexRgb(h){ h=h.replace('#',''); return {r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16)}; }
   function rgba(c,a){ return 'rgba('+(c.r|0)+','+(c.g|0)+','+(c.b|0)+','+(a===undefined?1:a)+')'; }
   function lighten(c,f){ return {r:c.r+(255-c.r)*f, g:c.g+(255-c.g)*f, b:c.b+(255-c.b)*f}; }
@@ -35,6 +35,13 @@
   const PLANETS = SITE.planets.map(p=>({
     name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r,
     a:p.a, e:p.e, period:p.period, rot:p.rot,
+    ring: p.ring ? {
+      inner: p.ring.inner!=null ? p.ring.inner : 1.4,
+      outer: p.ring.outer!=null ? p.ring.outer : 2.1,
+      tilt:  p.ring.tilt!=null  ? p.ring.tilt  : 0.33,
+      angle: p.ring.angle!=null ? p.ring.angle : -0.5,
+      color: hexRgb(p.ring.color || '#bfae8c')
+    } : null,
     moons: p.moons.map(m=>({
       name:m.name, dr:m.dr, period:m.period, e:m.e, rot:m.rot,
       body:m.body, href:m.href||'#',
@@ -65,7 +72,7 @@
 
   function computeFit(){
     systemExtent = 0;
-    PLANETS.forEach(p=>{ systemExtent = Math.max(systemExtent, p.a*(1+p.e) + p.r); });
+    PLANETS.forEach(p=>{ const er = p.ring ? p.r*p.ring.outer : p.r; systemExtent = Math.max(systemExtent, p.a*(1+p.e) + er); });
     fitScale = Math.min(W,H) / (2*(systemExtent + 48)) * 0.96;
   }
   function planetFocusScale(p){
@@ -80,8 +87,8 @@
 
   // sparse scattered stars (fixed fractional positions so they never twinkle/jump)
   const scatter = [];
-  for(let i=0;i<150;i++){
-    scatter.push({ fx:Math.random(), fy:Math.random(), r:0.3+Math.random()*0.9, a:0.04+Math.random()*0.12 });
+  for(let i=0;i<320;i++){
+    scatter.push({ fx:Math.random(), fy:Math.random(), r:0.3+Math.random()*0.9, a:0.04+Math.random()*0.13 });
   }
 
   // real constellation asterisms — stars in local 0..1 space (y down), edges by index.
@@ -146,6 +153,71 @@
       ax:0.74, ay:0.92, scale:0.07, rot:0.0,
       stars:[[0.50,0.05],[0.50,0.95],[0.15,0.55],[0.85,0.45]],
       edges:[[0,1],[2,3]]
+    },
+    { // Ursa Minor (Little Dipper)
+      ax:0.93, ay:0.11, scale:0.15, rot:0.06,
+      stars:[[0.20,0.85],[0.32,0.66],[0.44,0.48],[0.56,0.40],[0.68,0.30],[0.70,0.52],[0.58,0.60]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]
+    },
+    { // Draco (winding)
+      ax:0.50, ay:0.28, scale:0.22, rot:0.0,
+      stars:[[0.10,0.80],[0.22,0.62],[0.30,0.45],[0.42,0.35],[0.55,0.40],[0.60,0.55],[0.52,0.68],[0.62,0.78],[0.78,0.72],[0.86,0.55],[0.78,0.40]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,8]]
+    },
+    { // Cepheus (house)
+      ax:0.40, ay:0.27, scale:0.11, rot:-0.05,
+      stars:[[0.50,0.10],[0.20,0.40],[0.25,0.80],[0.75,0.80],[0.80,0.40]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]
+    },
+    { // Perseus
+      ax:0.27, ay:0.41, scale:0.14, rot:0.04,
+      stars:[[0.50,0.10],[0.45,0.35],[0.40,0.55],[0.30,0.75],[0.55,0.65],[0.65,0.80],[0.58,0.45]],
+      edges:[[0,1],[1,2],[2,3],[2,4],[4,5],[1,6]]
+    },
+    { // Auriga (pentagon)
+      ax:0.72, ay:0.33, scale:0.13, rot:0.0,
+      stars:[[0.50,0.08],[0.78,0.35],[0.66,0.75],[0.30,0.78],[0.20,0.38]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]
+    },
+    { // Sagittarius (teapot)
+      ax:0.30, ay:0.88, scale:0.16, rot:0.02,
+      stars:[[0.20,0.40],[0.35,0.30],[0.45,0.45],[0.30,0.55],[0.55,0.35],[0.60,0.55],[0.45,0.60],[0.70,0.25]],
+      edges:[[0,1],[1,2],[2,3],[3,0],[1,4],[4,5],[5,2],[5,6],[4,7]]
+    },
+    { // Canis Major
+      ax:0.10, ay:0.90, scale:0.13, rot:-0.04,
+      stars:[[0.40,0.30],[0.55,0.45],[0.45,0.60],[0.30,0.55],[0.65,0.70],[0.50,0.80],[0.70,0.40]],
+      edges:[[0,1],[1,2],[2,3],[3,0],[2,4],[4,5],[1,6]]
+    },
+    { // Corona Borealis (arc)
+      ax:0.86, ay:0.56, scale:0.08, rot:0.0,
+      stars:[[0.10,0.50],[0.20,0.35],[0.35,0.28],[0.50,0.30],[0.65,0.38],[0.78,0.50],[0.88,0.66]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]
+    },
+    { // Hercules (keystone)
+      ax:0.60, ay:0.46, scale:0.12, rot:0.03,
+      stars:[[0.40,0.35],[0.60,0.32],[0.66,0.55],[0.44,0.58],[0.30,0.18],[0.74,0.16],[0.24,0.78],[0.80,0.80]],
+      edges:[[0,1],[1,2],[2,3],[3,0],[0,4],[1,5],[3,6],[2,7]]
+    },
+    { // Aquarius
+      ax:0.13, ay:0.14, scale:0.14, rot:0.0,
+      stars:[[0.15,0.40],[0.35,0.35],[0.50,0.45],[0.55,0.30],[0.68,0.40],[0.80,0.55],[0.60,0.60]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[2,6]]
+    },
+    { // Delphinus (small)
+      ax:0.45, ay:0.61, scale:0.05, rot:0.0,
+      stars:[[0.40,0.30],[0.55,0.22],[0.62,0.38],[0.48,0.46],[0.55,0.62]],
+      edges:[[0,1],[1,2],[2,3],[3,0],[3,4]]
+    },
+    { // Aquila (eagle)
+      ax:0.07, ay:0.60, scale:0.12, rot:0.03,
+      stars:[[0.50,0.45],[0.50,0.20],[0.50,0.70],[0.28,0.40],[0.72,0.50],[0.20,0.30],[0.80,0.60]],
+      edges:[[1,0],[0,2],[3,0],[0,4],[5,3],[4,6]]
+    },
+    { // Corvus (the crow)
+      ax:0.92, ay:0.86, scale:0.10, rot:-0.04,
+      stars:[[0.30,0.20],[0.65,0.25],[0.72,0.65],[0.38,0.70],[0.20,0.45]],
+      edges:[[0,1],[1,2],[2,3],[3,0],[3,4]]
     }
   ];
 
@@ -228,20 +300,20 @@
     const hlx = x + nx*r*0.5, hly = y + ny*r*0.5;
 
     const g = ctx.createRadialGradient(hlx,hly, r*0.06, x, y, r*1.18);
-    g.addColorStop(0,   rgba(lighten(base,0.42), alpha));
+    g.addColorStop(0,   rgba(lighten(base,0.52), alpha));
     g.addColorStop(0.42,rgba(base, alpha));
-    g.addColorStop(0.82,rgba(darken(base,0.46), alpha));
-    g.addColorStop(1,   rgba(mix(darken(base,0.72), CYAN_SHADOW, 0.5), alpha));
+    g.addColorStop(0.82,rgba(darken(base,0.30), alpha));
+    g.addColorStop(1,   rgba(mix(darken(base,0.50), SHADOW, 0.15), alpha));
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
     ctx.fillStyle = g; ctx.fill();
 
-    // cool terminator shadow on the far side, clipped (material, not glowy)
+    // terminator shadow on the far side, clipped (material, not glowy)
     ctx.save();
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.clip();
     const shx = x - nx*r*0.55, shy = y - ny*r*0.55;
     const sg = ctx.createRadialGradient(shx,shy, r*0.1, shx,shy, r*1.85);
-    sg.addColorStop(0,   rgba(mix(darken(base,0.78), CYAN_SHADOW, 0.6), 0.85*alpha));
-    sg.addColorStop(0.6, rgba(CYAN_SHADOW, 0));
+    sg.addColorStop(0,   rgba(mix(darken(base,0.55), SHADOW, 0.18), 0.45*alpha));
+    sg.addColorStop(0.6, rgba(SHADOW, 0));
     ctx.fillStyle = sg; ctx.fillRect(x-r,y-r,r*2,r*2);
     ctx.restore();
 
@@ -250,6 +322,39 @@
     ctx.lineWidth = Math.max(0.6, 1.1/view.scale);
     ctx.strokeStyle = rgba(darken(base,0.6), 0.45*alpha);
     ctx.stroke();
+  }
+
+  // a Saturn-style ring: 'back' half drawn before the body, 'front' half after,
+  // so the planet correctly occludes the far arc. Material, no glow.
+  function drawRingHalf(x,y,r,alpha,ring,half){
+    const ro = r*ring.outer, ri = r*ring.inner, sq = ring.tilt, ang = ring.angle;
+    const BIG = ro*3;
+    ctx.save();
+    // clip to the near/far half-plane, split along the ring's major axis
+    ctx.translate(x,y); ctx.rotate(ang);
+    ctx.beginPath();
+    if(half==='front') ctx.rect(-BIG, 0, BIG*2, BIG);
+    else               ctx.rect(-BIG, -BIG, BIG*2, BIG);
+    ctx.clip();
+    ctx.rotate(-ang); ctx.translate(-x,-y);
+    // annulus (outer ellipse minus inner ellipse via even-odd)
+    ctx.beginPath();
+    ctx.ellipse(x,y, ro, ro*sq, ang, 0, Math.PI*2);
+    ctx.ellipse(x,y, ri, ri*sq, ang, 0, Math.PI*2);
+    ctx.fillStyle = rgba(ring.color, 0.42*alpha);
+    ctx.fill('evenodd');
+    // faint edge definition
+    ctx.beginPath();
+    ctx.ellipse(x,y, ro, ro*sq, ang, 0, Math.PI*2);
+    ctx.lineWidth = Math.max(0.5, 1/view.scale);
+    ctx.strokeStyle = rgba(darken(ring.color,0.45), 0.28*alpha);
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawRingedBody(x,y,r,base,alpha,ring){
+    drawRingHalf(x,y,r,alpha,ring,'back');
+    drawBody(x,y,r,base,alpha);
+    drawRingHalf(x,y,r,alpha,ring,'front');
   }
 
   function drawSun(){
@@ -350,7 +455,8 @@
     // planets
     PLANETS.forEach(p=>{
       const a = (p===focused) ? 1 : otherAlpha;
-      drawBody(p.wx,p.wy,p.r,p.color,a);
+      if(p.ring) drawRingedBody(p.wx,p.wy,p.r,p.color,a,p.ring);
+      else drawBody(p.wx,p.wy,p.r,p.color,a);
     });
 
     // focused planet's moons (orbits + bodies), faded in by prog
