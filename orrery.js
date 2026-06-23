@@ -23,6 +23,8 @@
   function lighten(c,f){ return {r:c.r+(255-c.r)*f, g:c.g+(255-c.g)*f, b:c.b+(255-c.b)*f}; }
   function darken(c,f){ return {r:c.r*(1-f), g:c.g*(1-f), b:c.b*(1-f)}; }
   function mix(a,b,t){ return {r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t}; }
+  // bebb deterministic PRNG so patterns are stable across frames (seeded per planet)
+  function rng(seed){ let s=(seed*2654435761)%2147483647; if(s<=0) s+=2147483646; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; }
 
   /* ---------- build runtime model from content.js (SITE) ---------- */
   const SUN = {
@@ -32,14 +34,16 @@
     r:     SITE.sun.r
   };
 
-  const PLANETS = SITE.planets.map(p=>({
+  const PLANETS = SITE.planets.map((p,idx)=>({
     name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r,
     a:p.a, e:p.e, period:p.period, rot:p.rot,
+    pattern: p.pattern || null, seed: idx+1,
     ring: p.ring ? {
       inner: p.ring.inner!=null ? p.ring.inner : 1.4,
       outer: p.ring.outer!=null ? p.ring.outer : 2.1,
       tilt:  p.ring.tilt!=null  ? p.ring.tilt  : 0.33,
       angle: p.ring.angle!=null ? p.ring.angle : -0.5,
+      alpha: p.ring.alpha!=null ? p.ring.alpha : 1,   // 0..1 overall ring opacity
       color: hexRgb(p.ring.color || '#bfae8c')
     } : null,
     moons: p.moons.map(m=>({
@@ -226,7 +230,7 @@
     bgCanvas.width = W*DPR; bgCanvas.height = H*DPR;
     bgctx.setTransform(DPR,0,0,DPR,0,0);
 
-    // deep desaturated blue night sky
+    // darrrrk desaturated blue night sky
     const g = bgctx.createRadialGradient(W*0.5, H*0.42, 0, W*0.5, H*0.5, Math.max(W,H)*0.85);
     g.addColorStop(0,    '#0d1626');
     g.addColorStop(0.55, '#0a101e');
@@ -241,7 +245,7 @@
       bgctx.fill();
     });
 
-    // constellations (very, very faint lines + slightly brighter star dots)
+    // constellations (very very faint lines + slightly brighter star dots)
     const minDim = Math.min(W,H);
     CONSTELLATIONS.forEach(c=>{
       const size = c.scale*minDim, ax = c.ax*W, ay = c.ay*H;
@@ -276,7 +280,7 @@
   }
   window.addEventListener('resize', resize);
 
-  /* ---------- projection ---------- */
+  /* projection timeeeee */
   function toScreen(wx,wy){
     return { x: W/2 + (wx-view.cx)*view.scale, y: H/2 + (wy-view.cy)*view.scale };
   }
@@ -292,7 +296,35 @@
   let lastT = performance.now();
 
   /* ---------- drawing a material body (no glow) ---------- */
-  function drawBody(x,y,r,base,alpha){
+  // "blown-glass ?" surface: marbled translucent streaks + a small glossy sheen,
+  // all clipped to the body. det. per seed so it doesn't shimmer.
+  function drawGlass(x,y,r,base,alpha,seed){
+    const rnd = rng(seed);
+    let dx=-x, dy=-y, len=Math.hypot(dx,dy)||1; const nx=dx/len, ny=dy/len;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.clip();
+    // swirling glassy streaks
+    for(let i=0;i<7;i++){
+      const ang = rnd()*Math.PI;
+      const rx = r*(0.45+rnd()*0.75), ry = r*(0.12+rnd()*0.38);
+      const ox = (rnd()-0.5)*r*0.6, oy = (rnd()-0.5)*r*0.6;
+      ctx.beginPath();
+      ctx.ellipse(x+ox, y+oy, rx, ry, ang, 0, Math.PI*2);
+      ctx.lineWidth = r*(0.03+rnd()*0.06);
+      const tint = (i%2===0) ? lighten(base,0.30) : darken(base,0.32);
+      ctx.strokeStyle = rgba(tint, 0.065*alpha);
+      ctx.stroke();
+    }
+    // glossy sheen toward the lit side
+    const hx = x + nx*r*0.42, hy = y + ny*r*0.42;
+    const sheen = ctx.createRadialGradient(hx,hy, 0, hx,hy, r*0.62);
+    sheen.addColorStop(0, 'rgba(255,251,242,'+(0.15*alpha)+')');
+    sheen.addColorStop(1, 'rgba(255,251,242,0)');
+    ctx.fillStyle = sheen; ctx.fillRect(x-r,y-r,r*2,r*2);
+    ctx.restore();
+  }
+
+  function drawBody(x,y,r,base,alpha,opts){
     if(alpha<=0) return;
     // light direction = toward sun (origin)
     let dx = -x, dy = -y, len = Math.hypot(dx,dy)||1;
@@ -317,6 +349,8 @@
     ctx.fillStyle = sg; ctx.fillRect(x-r,y-r,r*2,r*2);
     ctx.restore();
 
+    if(opts && opts.pattern==='glass') drawGlass(x,y,r,base,alpha,opts.seed||1);
+
     // faint dark rim for solidity
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
     ctx.lineWidth = Math.max(0.6, 1.1/view.scale);
@@ -324,26 +358,27 @@
     ctx.stroke();
   }
 
-  // a Saturn-style ring: 'back' half drawn before the body, 'front' half after,
-  // so the planet correctly occludes the far arc. Material, no glow.
+  // a saturn-style ring: (not uranus!!) 'back' half drawn before the body, 'front' half after,
+  // so the planet correctly occludes the far arc
   function drawRingHalf(x,y,r,alpha,ring,half){
+    alpha *= (ring.alpha!=null ? ring.alpha : 1);
     const ro = r*ring.outer, ri = r*ring.inner, sq = ring.tilt, ang = ring.angle;
     const BIG = ro*3;
     ctx.save();
-    // clip to the near/far half-plane, split along the ring's major axis
+    // clip to the near/far half plane, split along ring's axis
     ctx.translate(x,y); ctx.rotate(ang);
     ctx.beginPath();
     if(half==='front') ctx.rect(-BIG, 0, BIG*2, BIG);
     else               ctx.rect(-BIG, -BIG, BIG*2, BIG);
     ctx.clip();
     ctx.rotate(-ang); ctx.translate(-x,-y);
-    // annulus (outer ellipse minus inner ellipse via even-odd)
+    // annulus hehe (outer ellipse minus inner ellipse via even-odd)
     ctx.beginPath();
     ctx.ellipse(x,y, ro, ro*sq, ang, 0, Math.PI*2);
     ctx.ellipse(x,y, ri, ri*sq, ang, 0, Math.PI*2);
     ctx.fillStyle = rgba(ring.color, 0.42*alpha);
     ctx.fill('evenodd');
-    // faint edge definition
+    // lil bit of edge definition
     ctx.beginPath();
     ctx.ellipse(x,y, ro, ro*sq, ang, 0, Math.PI*2);
     ctx.lineWidth = Math.max(0.5, 1/view.scale);
@@ -351,15 +386,15 @@
     ctx.stroke();
     ctx.restore();
   }
-  function drawRingedBody(x,y,r,base,alpha,ring){
+  function drawRingedBody(x,y,r,base,alpha,ring,opts){
     drawRingHalf(x,y,r,alpha,ring,'back');
-    drawBody(x,y,r,base,alpha);
+    drawBody(x,y,r,base,alpha,opts);
     drawRingHalf(x,y,r,alpha,ring,'front');
   }
 
   function drawSun(){
     const r = SUN.r, base = SUN.color;
-    // material warm body, off-center highlight, limb darkening, no halo
+    // material warm body, off-center highlight, limb darkening, no halo (i can see ur halooooo)
     const g = ctx.createRadialGradient(-r*0.28, -r*0.28, r*0.05, 0, 0, r*1.12);
     g.addColorStop(0,   rgba(lighten(base,0.55),1));
     g.addColorStop(0.45,rgba(base,1));
@@ -416,7 +451,7 @@
     // keep camera locked onto the (frozen) focused planet
     if(focused){ target.cx = focused.wx; target.cy = focused.wy; }
 
-    // ease camera
+    // ease camera shit
     const k = 1 - Math.pow(0.0009, dt); // smooth, frame-rate independent
     view.scale += (target.scale - view.scale)*k;
     view.cx    += (target.cx    - view.cx)*k;
@@ -425,7 +460,7 @@
 
   /* ---------- render ---------- */
   function render(){
-    // prebaked dark-blue night sky with faint stars/constellations
+    // prebaked dark-blue night sky with beb stars/constellations
     ctx.setTransform(1,0,0,1,0,0);
     ctx.drawImage(bgCanvas, 0, 0);
     ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -455,8 +490,9 @@
     // planets
     PLANETS.forEach(p=>{
       const a = (p===focused) ? 1 : otherAlpha;
-      if(p.ring) drawRingedBody(p.wx,p.wy,p.r,p.color,a,p.ring);
-      else drawBody(p.wx,p.wy,p.r,p.color,a);
+      const opts = p.pattern ? {pattern:p.pattern, seed:p.seed} : null;
+      if(p.ring) drawRingedBody(p.wx,p.wy,p.r,p.color,a,p.ring,opts);
+      else drawBody(p.wx,p.wy,p.r,p.color,a,opts);
     });
 
     // focused planet's moons (orbits + bodies), faded in by prog
@@ -613,7 +649,7 @@
     mBody.textContent = m.body;
     mLink.href = m.href || '#';
     moonPanel.classList.add('show');
-    // position card near moon, clamped to viewport
+    // position card near moon (clamped to view)
     const s = toScreen(m.wx,m.wy);
     const cw = moonPanel.offsetWidth || 320, ch = moonPanel.offsetHeight || 200;
     let left = s.x + 24, top = s.y - ch/2;
@@ -631,7 +667,7 @@
   function closeAbout(){ aboutPanel.classList.remove('show'); if(mode==='system') hintEl.style.opacity='0.7'; }
   aboutPanel.querySelector('.a-close').addEventListener('click', closeAbout);
 
-  // fill the About card from content.js
+  // fill the about card from content.js
   function buildAbout(){
     const a = SITE.sun.about || {};
     const kickerEl = aboutPanel.querySelector('.a-kicker');
@@ -725,7 +761,7 @@
     }
   });
 
-  /* ---------- boot ---------- */
+  /* boot ur boot */
   function boot(){
     buildAbout();
     resize();

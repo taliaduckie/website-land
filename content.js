@@ -1,12 +1,12 @@
 /* ============================================================
    content.js — EDIT ME
    All the words, colors, and numbers live here. The engine
-   (orrery.js) reads this object and never needs to be touched.
+   (orrery.js) reads this object and never needs to be touched wût wût
 
    color   : hex string, e.g. '#9b3d34'
    r       : body size in world units (relative emphasis; bigger = more weight)
    a       : orbit radius (distance from the sun)
-   e       : eccentricity 0..~0.2 (how elliptical / non-mechanical the orbit is)
+   e       : eccentricity? 0..~0.2 (how elliptical or whatever the orbit is)
    period  : seconds for one full orbit (bigger = slower)
    rot     : orientation of the orbit ellipse, in radians (just vary it per body)
 
@@ -21,7 +21,7 @@ const SITE = {
     color: '#c47a2f',
     r: 46,
     about: {
-      kicker: '',          // optional small line above the name; leave '' to hide
+      kicker: '',          // maybe beb small line above the name; leave '' to hide
       name: 'Talia Honikman',
       paragraphs: [
         "I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, and food. Human communication forms are inherently lossy; for me this is what makes them so fascinating!"
@@ -40,6 +40,8 @@ const SITE = {
       name: 'pragmatics stuff',
       desc: 'literal meaning ⊂ actual meaning',
       color: '#9b3d34', r: 27, a: 520, e: 0.10, period: 232, rot: 3.45,
+      pattern: 'glass',   // subtle blown-glass surface
+
       moons: [
         { name: 'negation taxonomy',        dr: 50, period: 17, e: 0.06, rot: 0.4, href: '#', body: 'A placeholder note on how listeners reconstruct intended meaning from sparse signals.' },
         { name: 'gricean classifier',                    dr: 74, period: 25, e: 0.12, rot: 2.1, href: '#', body: 'Placeholder: doing things with words — promises, requests, the force behind a sentence.' },
@@ -50,6 +52,8 @@ const SITE = {
       name: 'AI thoughts',
       desc: 'humanities-oriented AI thoughts',
       color: '#5d7a44', r: 31, a: 262, e: 0.13, period: 108, rot: 1.15, // largest — strong emphasis
+      pattern: 'glass',   // subtle blown-glass surface
+      ring: { inner: 1.62, outer: 1.9, tilt: 0.28, angle: 0.5, color: '#a8b196', alpha: 0.36 },
       moons: [
         { name: 'interpretability notes',  dr: 52,  period: 19, e: 0.05, rot: 1.0, href: '#', body: 'Placeholder: reading the internals of a model and trying to say what it is doing.' },
         { name: 'incentives & alignment',  dr: 78,  period: 28, e: 0.14, rot: 3.0, href: '#', body: 'Placeholder on objectives, proxies, and the gap between them.' },
