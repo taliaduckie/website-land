@@ -37,18 +37,18 @@ const SITE = {
   // varied sizes (emphasis), orbits, eccentricities, periods (slow, all different)
   planets: [
     {
-      name: 'pragmatics',
-      desc: 'Literal Meaning ⊂ Actual Meaning',
+      name: 'pragmatics stuff',
+      desc: 'literal meaning ⊂ actual meaning',
       color: '#9b3d34', r: 27, a: 520, e: 0.10, period: 232, rot: 3.45,
       moons: [
-        { name: 'implicature & inference',        dr: 50, period: 17, e: 0.06, rot: 0.4, href: '#', body: 'A placeholder note on how listeners reconstruct intended meaning from sparse signals.' },
-        { name: 'speech acts',                    dr: 74, period: 25, e: 0.12, rot: 2.1, href: '#', body: 'Placeholder: doing things with words — promises, requests, the force behind a sentence.' },
-        { name: 'the semantics–pragmatics line',  dr: 96, period: 34, e: 0.08, rot: 4.0, href: '#', body: 'Placeholder essay on where encoded meaning ends and context takes over.' }
+        { name: 'negation taxonomy',        dr: 50, period: 17, e: 0.06, rot: 0.4, href: '#', body: 'A placeholder note on how listeners reconstruct intended meaning from sparse signals.' },
+        { name: 'gricean classifier',                    dr: 74, period: 25, e: 0.12, rot: 2.1, href: '#', body: 'Placeholder: doing things with words — promises, requests, the force behind a sentence.' },
+        { name: 'sycophancy mapping',  dr: 96, period: 34, e: 0.08, rot: 4.0, href: '#', body: 'Placeholder essay on where encoded meaning ends and context takes over.' }
       ]
     },
     {
       name: 'AI thoughts',
-      desc: 'humanities-oriented AI thoughts.',
+      desc: 'humanities-oriented AI thoughts',
       color: '#5d7a44', r: 31, a: 262, e: 0.13, period: 108, rot: 1.15, // largest — strong emphasis
       moons: [
         { name: 'interpretability notes',  dr: 52,  period: 19, e: 0.05, rot: 1.0, href: '#', body: 'Placeholder: reading the internals of a model and trying to say what it is doing.' },
@@ -58,7 +58,7 @@ const SITE = {
     },
     {
       name: 'bad food science',
-      desc: 'the chemistry and craft of what we eat.',
+      desc: 'rankings, sortings, meltings, testings...',
       color: '#b06a2c', r: 21, a: 348, e: 0.06, period: 152, rot: 2.05,
       moons: [
         { name: 'fermentation log', dr: 48, period: 16, e: 0.07, rot: 0.7, href: '#', body: 'Placeholder: notes from jars on the counter — time, salt, and microbes.' },
@@ -67,7 +67,7 @@ const SITE = {
     },
     {
       name: 'photography',
-      desc: 'light, grain, and the patience of analog.',
+      desc: 'portraiture, film, landscape',
       color: '#356b6b', r: 18, a: 432, e: 0.16, period: 188, rot: 2.75,
       moons: [
         { name: 'velvia diaries',   dr: 50, period: 18, e: 0.08, rot: 1.4, href: '#', body: 'Placeholder: saturated transparencies and the color of late afternoon.' },
@@ -77,7 +77,7 @@ const SITE = {
     },
     {
       name: 'writing',
-      desc: 'essays that tie the other threads together.',
+      desc: 'about various topics and miscellany',
       color: '#7a3f57', r: 24, a: 175, e: 0.09, period: 74, rot: 0.35,
       moons: [
         { name: 'essays',       dr: 50, period: 17, e: 0.07, rot: 0.9, href: '#', body: 'Placeholder for longer pieces — the connective tissue made explicit.' },

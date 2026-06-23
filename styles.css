@@ -6,7 +6,7 @@
   --line:rgba(150,120,80,0.30);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:#16100b;}
+html,body{height:100%;overflow:hidden;background:#05080f;}
 body{
   font-family:"Libre Baskerville",Georgia,serif;
   color:var(--ink);
