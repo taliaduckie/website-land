@@ -37,7 +37,7 @@
   const PLANETS = SITE.planets.map((p,idx)=>({
     name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r,
     a:p.a, e:p.e, period:p.period, rot:p.rot,
-    pattern: p.pattern || null, seed: idx+1,
+    pattern: p.pattern || 'glass', seed: idx+1,   // all planets glassy by default; set pattern:'none' to disable
     ring: p.ring ? {
       inner: p.ring.inner!=null ? p.ring.inner : 1.4,
       outer: p.ring.outer!=null ? p.ring.outer : 2.1,
@@ -311,14 +311,14 @@
       ctx.beginPath();
       ctx.ellipse(x+ox, y+oy, rx, ry, ang, 0, Math.PI*2);
       ctx.lineWidth = r*(0.03+rnd()*0.06);
-      const tint = (i%2===0) ? lighten(base,0.30) : darken(base,0.32);
-      ctx.strokeStyle = rgba(tint, 0.065*alpha);
+      const tint = (i%2===0) ? lighten(base,0.32) : darken(base,0.34);
+      ctx.strokeStyle = rgba(tint, 0.085*alpha);
       ctx.stroke();
     }
     // glossy sheen toward the lit side
     const hx = x + nx*r*0.42, hy = y + ny*r*0.42;
     const sheen = ctx.createRadialGradient(hx,hy, 0, hx,hy, r*0.62);
-    sheen.addColorStop(0, 'rgba(255,251,242,'+(0.15*alpha)+')');
+    sheen.addColorStop(0, 'rgba(255,251,242,'+(0.18*alpha)+')');
     sheen.addColorStop(1, 'rgba(255,251,242,0)');
     ctx.fillStyle = sheen; ctx.fillRect(x-r,y-r,r*2,r*2);
     ctx.restore();
@@ -414,8 +414,14 @@
     ctx.rotate(rot);
     ctx.beginPath();
     ctx.ellipse(0,0,a,b,0,0,Math.PI*2);
-    ctx.lineWidth = 1.1/view.scale;
-    ctx.strokeStyle = 'rgba(150,120,80,'+(0.16*alpha)+')';
+    ctx.lineWidth = 1.5/view.scale;
+    ctx.strokeStyle = 'rgba(180,160,124,'+(0.20*alpha)+')';
+    ctx.shadowColor = 'rgba(198,174,130,'+(0.55*alpha)+')';
+    ctx.shadowBlur = 7;
+    ctx.stroke();
+    // second soft pass to bloom the glow a little
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = 'rgba(180,160,124,'+(0.10*alpha)+')';
     ctx.stroke();
     ctx.restore();
   }
@@ -521,7 +527,7 @@
     {
       const s = toScreen(0,0);
       const a = (focused ? otherAlpha : 1);
-      ctx.font = '700 italic 19px "IM Fell English", serif';
+      ctx.font = '700 italic 15px "IM Fell English", serif';
       ctx.fillStyle = rgba(hexRgb('#e9ddcc'), 0.78*a);
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
     }
