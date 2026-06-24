@@ -245,26 +245,21 @@
       bgctx.fill();
     });
 
-    // constellations (very very faint lines + slightly brighter star dots)
+    // (constellations are drawn live each frame in drawConstellations so they can react to the cursor)
+  }
+
+  // precompute constellation star positions (screen px) + a per-star opacity that we lerp
+  function buildConstellations(){
+    constItems = [];
     const minDim = Math.min(W,H);
     CONSTELLATIONS.forEach(c=>{
       const size = c.scale*minDim, ax = c.ax*W, ay = c.ay*H;
       const cos = Math.cos(c.rot||0), sin = Math.sin(c.rot||0);
       const pts = c.stars.map(([lx,ly])=>{
         const dx = lx-0.5, dy = ly-0.5;
-        return { x: ax + (dx*cos - dy*sin)*size, y: ay + (dx*sin + dy*cos)*size };
+        return { bx: ax + (dx*cos - dy*sin)*size, by: ay + (dx*sin + dy*cos)*size, op: 0.16 };
       });
-      bgctx.strokeStyle = 'rgba(150,170,205,0.06)';
-      bgctx.lineWidth = 1;
-      bgctx.beginPath();
-      c.edges.forEach(([i,j])=>{ bgctx.moveTo(pts[i].x,pts[i].y); bgctx.lineTo(pts[j].x,pts[j].y); });
-      bgctx.stroke();
-      pts.forEach(p=>{
-        bgctx.beginPath();
-        bgctx.arc(p.x, p.y, 1.2, 0, Math.PI*2);
-        bgctx.fillStyle = 'rgba(214,222,238,0.28)';
-        bgctx.fill();
-      });
+      constItems.push({ pts, edges: c.edges });
     });
   }
 
@@ -273,19 +268,22 @@
     W = window.innerWidth; H = window.innerHeight;
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    cometCanvas.width = W*DPR; cometCanvas.height = H*DPR;
+    cometCanvas.style.width = W+'px'; cometCanvas.style.height = H+'px';
     computeFit();
     buildBackground();
+    buildConstellations();
     if(mode==='system'){ target.scale=fitScale; target.cx=0; target.cy=0; }
     else if(focused){ target.scale = planetFocusScale(focused); }
   }
   window.addEventListener('resize', resize);
 
   /* projection timeeeee */
-  function toScreen(wx,wy){
-    return { x: W/2 + (wx-view.cx)*view.scale, y: H/2 + (wy-view.cy)*view.scale };
+  function toScreen(wx,wy,ox,oy){
+    return { x: W/2 + (ox||0) + (wx-view.cx)*view.scale, y: H/2 + (oy||0) + (wy-view.cy)*view.scale };
   }
-  function toWorld(sx,sy){
-    return { x: (sx-W/2)/view.scale + view.cx, y: (sy-H/2)/view.scale + view.cy };
+  function toWorld(sx,sy,ox,oy){
+    return { x: (sx-W/2-(ox||0))/view.scale + view.cx, y: (sy-H/2-(oy||0))/view.scale + view.cy };
   }
 
   /* ---------- state ---------- */
@@ -294,6 +292,23 @@
   let focusTargetScale = 1;
   let hoverObj = null;          // {type, obj, parent?}
   let lastT = performance.now();
+
+  /* ---------- pointer / parallax / comet state ---------- */
+  const mouse = { x:0, y:0, active:false };
+  let pmx=0, pmy=0, pmtx=0, pmty=0;                  // parallax: smoothed + target, each in [-1,1]
+  const PX_BG=4, PX_SUN=6, PX_RING=8, PX_PLANET=12;  // max screen-px shift per depth layer
+  const par = { bg:{x:0,y:0}, sun:{x:0,y:0}, ring:{x:0,y:0}, planet:{x:0,y:0} };
+  let constItems = [];          // live constellation geometry (screen px) for cursor activation
+  const trail = [];             // comet-trail points {x,y,life}
+  const cometCanvas = document.getElementById('comet');
+  const cctx = cometCanvas.getContext('2d');
+
+  function applyWorld(offx,offy){ // world transform for a layer shifted by (offx,offy) screen px
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.translate(W/2+offx, H/2+offy);
+    ctx.scale(view.scale, view.scale);
+    ctx.translate(-view.cx, -view.cy);
+  }
 
   /* ---------- drawing a material body (no glow) ---------- */
   // "blown-glass ?" surface: marbled translucent streaks + a small glossy sheen,
@@ -468,14 +483,29 @@
     view.scale += (target.scale - view.scale)*k;
     view.cx    += (target.cx    - view.cx)*k;
     view.cy    += (target.cy    - view.cy)*k;
+
+    // parallax: lerp the smoothed mouse toward target (the lag is what makes it feel physical)
+    if(!mouse.active){ pmtx=0; pmty=0; }
+    pmx += (pmtx-pmx)*0.05; pmy += (pmty-pmy)*0.05;
+    par.bg.x=pmx*PX_BG;         par.bg.y=pmy*PX_BG;
+    par.sun.x=pmx*PX_SUN;       par.sun.y=pmy*PX_SUN;
+    par.ring.x=pmx*PX_RING;     par.ring.y=pmy*PX_RING;
+    par.planet.x=pmx*PX_PLANET; par.planet.y=pmy*PX_PLANET;
+
+    // comet trail evaporates — multiplicative life decay, drop the faint tail
+    for(let i=trail.length-1;i>=0;i--){ trail[i].life *= 0.9; if(trail[i].life < 0.03) trail.splice(i,1); }
   }
 
   /* ---------- render ---------- */
   function render(){
-    // prebaked dark-blue night sky with beb stars/constellations
+    // background layer (parallax par.bg) — fill base first so the shifted blit never seams
     ctx.setTransform(1,0,0,1,0,0);
-    ctx.drawImage(bgCanvas, 0, 0);
+    ctx.fillStyle = '#05080f'; ctx.fillRect(0,0,W*DPR,H*DPR);
+    ctx.drawImage(bgCanvas, par.bg.x*DPR, par.bg.y*DPR);
     ctx.setTransform(DPR,0,0,DPR,0,0);
+
+    // live constellation layer (reacts to the cursor), rides the background parallax
+    drawConstellations();
 
     // focus progress 0..1 (drives moon fade + dimming of other planets)
     let prog = 0;
@@ -485,53 +515,93 @@
     }
     const otherAlpha = focused ? (1 - prog*0.92) : 1;
 
-    // world-space pass
-    ctx.save();
-    ctx.translate(W/2,H/2);
-    ctx.scale(view.scale, view.scale);
-    ctx.translate(-view.cx, -view.cy);
-
-    // planet orbit rings
+    // orbit-rings layer (parallax par.ring)
+    // this is taking FOREVER wauhgh
+    applyWorld(par.ring.x, par.ring.y);
     PLANETS.forEach(p=>{
       const a = (p===focused) ? prog*0.5 + (1-prog)*1 : otherAlpha;
       drawOrbit(p.a,p.b,p.rot, a*0.9);
     });
+    if(focused && prog>0.02){
+      ctx.save();
+      ctx.translate(focused.wx, focused.wy);
+      focused.moons.forEach(m=>{ drawOrbit(m.dr,m.b,m.rot, prog*0.85); });
+      ctx.restore();
+    }
 
+    // sun layer (parallax par.sun)
+    applyWorld(par.sun.x, par.sun.y);
     drawSun();
 
-    // planets
+    // planets + moons layer (parallax par.planet — the largest shift, reads as nearest)
+    applyWorld(par.planet.x, par.planet.y);
     PLANETS.forEach(p=>{
       const a = (p===focused) ? 1 : otherAlpha;
       const opts = p.pattern ? {pattern:p.pattern, seed:p.seed} : null;
       if(p.ring) drawRingedBody(p.wx,p.wy,p.r,p.color,a,p.ring,opts);
       else drawBody(p.wx,p.wy,p.r,p.color,a,opts);
     });
-
-    // focused planet's moons (orbits + bodies), faded in by prog
     if(focused && prog>0.02){
-      ctx.save();
-      ctx.translate(focused.wx, focused.wy);
-      focused.moons.forEach(m=>{
-        drawOrbit(m.dr,m.b,m.rot, prog*0.85);
-      });
-      ctx.restore();
-      focused.moons.forEach(m=>{
-        drawBody(m.wx,m.wy,m.r,m.color,prog);
-      });
+      focused.moons.forEach(m=>{ drawBody(m.wx,m.wy,m.r,m.color,prog); });
     }
-    ctx.restore();
 
     // screen-space labels
+    ctx.setTransform(DPR,0,0,DPR,0,0);
     drawLabels(prog, otherAlpha);
+
+    // comet overlay (its own canvas, on top)
+    drawComet();
+  }
+
+  // constellations: each star's opacity eases toward a target set by cursor proximity;
+  // a line brightens with the dimmer of its two endpoints. No snap, just slow notice.
+  function drawConstellations(){
+    const ox = par.bg.x, oy = par.bg.y;
+    ctx.lineWidth = 1;
+    for(const item of constItems){
+      const pts = item.pts;
+      for(const p of pts){
+        let tgt = 0.16;
+        if(mouse.active){
+          const d = Math.hypot((p.bx+ox)-mouse.x, (p.by+oy)-mouse.y);
+          if(d < 90) tgt = 0.16 + (0.7-0.16)*(1 - d/90); // inverse-distance up to ~0.7
+        }
+        p.op += (tgt - p.op)*0.08; // slow lerp toward target
+      }
+      for(const e of item.edges){
+        const a = pts[e[0]], b = pts[e[1]];
+        const la = Math.min(a.op, b.op)*0.5;
+        ctx.strokeStyle = 'rgba(150,170,205,'+la+')';
+        ctx.beginPath(); ctx.moveTo(a.bx+ox,a.by+oy); ctx.lineTo(b.bx+ox,b.by+oy); ctx.stroke();
+      }
+      for(const p of pts){
+        ctx.beginPath(); ctx.arc(p.bx+ox, p.by+oy, 1.2, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(214,222,238,'+p.op+')'; ctx.fill();
+      }
+    }
+  }
+
+  // comet trail: soft evaporating blobs, white with a faint warm-yellow tint
+  function drawComet(){
+    cctx.setTransform(DPR,0,0,DPR,0,0);
+    cctx.clearRect(0,0,W,H);
+    for(const t of trail){
+      const rad = Math.max(0.1, 7*t.life);
+      const g = cctx.createRadialGradient(t.x,t.y,0, t.x,t.y, rad);
+      g.addColorStop(0, 'rgba(255,250,236,'+(0.5*t.life)+')');
+      g.addColorStop(1, 'rgba(255,250,236,0)');
+      cctx.fillStyle = g;
+      cctx.beginPath(); cctx.arc(t.x,t.y,rad,0,Math.PI*2); cctx.fill();
+    }
   }
 
   function drawLabels(prog, otherAlpha){
     ctx.textAlign='center';
     ctx.textBaseline='top';
 
-    // sun label (centerpiece)
+    // sun label (centerpiece) — rides the sun layer's parallax
     {
-      const s = toScreen(0,0);
+      const s = toScreen(0,0,par.sun.x,par.sun.y);
       const a = (focused ? otherAlpha : 1);
       ctx.font = '700 italic 15px "IM Fell English", serif';
       ctx.fillStyle = rgba(hexRgb('#e9ddcc'), 0.78*a);
@@ -545,7 +615,7 @@
       if(p===focused) a = prog;
       else if(hovered) a = otherAlpha;
       if(a<=0.03) return;
-      const s = toScreen(p.wx,p.wy);
+      const s = toScreen(p.wx,p.wy,par.planet.x,par.planet.y);
       ctx.font = '700 ' + Math.round(15 + p.r*0.10) + 'px "IM Fell English", serif';
       ctx.fillStyle = rgba(hexRgb('#e9ddcc'), a);
       ctx.fillText(p.name, s.x, s.y + p.r*view.scale + 10);
@@ -554,7 +624,7 @@
     // moon labels — only the hovered (paused) moon
     if(focused && prog>0.25 && hoverObj && hoverObj.type==='moon'){
       const m = hoverObj.obj;
-      const s = toScreen(m.wx,m.wy);
+      const s = toScreen(m.wx,m.wy,par.planet.x,par.planet.y);
       ctx.font = '700 13px "IM Fell English", serif';
       ctx.fillStyle = rgba(hexRgb('#d9cbb6'), prog);
       ctx.fillText(m.name, s.x, s.y + m.r*view.scale + 8);
@@ -573,7 +643,7 @@
 
   /* ---------- hit testing ---------- */
   function hitTest(sx,sy){
-    const w = toWorld(sx,sy);
+    const w = toWorld(sx,sy,par.planet.x,par.planet.y); // planets/moons live in the planet layer
     if(focused){
       // moons of focused planet first
       for(const m of focused.moons){
@@ -592,7 +662,8 @@
       if(d<=rr*1.2 && d<bestD){ best={type:'planet',obj:p}; bestD=d; }
     }
     if(best) return best;
-    if(Math.hypot(w.x, w.y) <= SUN.r*1.1) return {type:'sun', obj:SUN};
+    const ws = toWorld(sx,sy,par.sun.x,par.sun.y); // sun sits in its own layer
+    if(Math.hypot(ws.x, ws.y) <= SUN.r*1.1) return {type:'sun', obj:SUN};
     return null;
   }
 
@@ -607,10 +678,10 @@
   function positionTip(){
     if(!hoverObj) return;
     const o = hoverObj.obj;
-    let wx,wy,r;
-    if(hoverObj.type==='sun'){ wx=0;wy=0;r=SUN.r; }
-    else { wx=o.wx; wy=o.wy; r=o.r; }
-    const s = toScreen(wx,wy);
+    let wx,wy,r,off;
+    if(hoverObj.type==='sun'){ wx=0;wy=0;r=SUN.r; off=par.sun; }
+    else { wx=o.wx; wy=o.wy; r=o.r; off=par.planet; }
+    const s = toScreen(wx,wy,off.x,off.y);
     tipEl.style.left = s.x + 'px';
     tipEl.style.top  = (s.y - r*view.scale - 14) + 'px';
   }
@@ -714,8 +785,18 @@
   let down=null, holdTimer=null, holdActive=false, moved=false;
   const HOLD_MS=300, MOVE_TOL=12;
 
+  // mouse move feeds three things: parallax target, the comet trail, and hover
+  function onMouseMove(x,y){
+    mouse.x=x; mouse.y=y; mouse.active=true;
+    pmtx = Math.max(-1, Math.min(1, (x - W/2)/(W/2)));
+    pmty = Math.max(-1, Math.min(1, (y - H/2)/(H/2)));
+    trail.push({x, y, life:1});
+    if(trail.length > 12) trail.shift();
+  }
+
   canvas.addEventListener('pointermove', e=>{
     if(e.pointerType==='mouse'){
+      onMouseMove(e.clientX, e.clientY);
       setHover(hitTest(e.clientX, e.clientY));
       return;
     }
@@ -755,7 +836,7 @@
     holdActive=false; down=null; setHover(null);
   });
   canvas.addEventListener('pointerleave', e=>{
-    if(e.pointerType==='mouse') setHover(null);
+    if(e.pointerType==='mouse'){ setHover(null); mouse.active=false; } // parallax eases back, constellations relax
   });
 
   backBtn.addEventListener('click', pullBack);

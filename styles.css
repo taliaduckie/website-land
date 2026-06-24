@@ -16,6 +16,7 @@ body{
   -webkit-user-select:none;
 }
 #stage{position:fixed;inset:0;display:block;touch-action:none;}
+#comet{position:fixed;inset:0;display:block;pointer-events:none;z-index:12;}
 
 /* hover description tooltip */
 #tip{
