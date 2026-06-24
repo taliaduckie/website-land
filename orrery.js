@@ -25,6 +25,8 @@
   function mix(a,b,t){ return {r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t}; }
   // bebb deterministic PRNG so patterns are stable across frames (seeded per planet)
   function rng(seed){ let s=(seed*2654435761)%2147483647; if(s<=0) s+=2147483646; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; }
+  // url-safe slug for deep links, e.g. "AI thoughts" -> "ai-thoughts"
+  function slugify(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 
   /* ---------- build runtime model from content.js (SITE) ---------- */
   const SUN = {
@@ -35,7 +37,7 @@
   };
 
   const PLANETS = SITE.planets.map((p,idx)=>({
-    name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r,
+    name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r, slug:slugify(p.name),
     a:p.a, e:p.e, period:p.period, rot:p.rot,
     pattern: p.pattern || 'glass', seed: idx+1,   // all planets glassy by default; set pattern:'none' to disable
     ring: p.ring ? {
@@ -48,7 +50,7 @@
     } : null,
     moons: p.moons.map(m=>({
       name:m.name, dr:m.dr, period:m.period, e:m.e, rot:m.rot,
-      body:m.body, href:m.href||'#',
+      body:m.body, href:m.href||'#', slug:slugify(m.name),
       angle:m.rot, r: 7.2 + m.dr*0.012
     }))
   }));
@@ -770,12 +772,12 @@
     moonPanel.style.top = top+'px';
   }
   function closeMoon(){ moonPanel.classList.remove('show'); }
-  moonPanel.querySelector('.m-close').addEventListener('click', closeMoon);
+  moonPanel.querySelector('.m-close').addEventListener('click', ()=>writeHash(focused?focused.slug:''));
   mLink.addEventListener('click', e=>{ if(mLink.getAttribute('href')==='#') e.preventDefault(); });
 
   function openAbout(){ closeMoon(); aboutPanel.classList.add('show'); hintEl.style.opacity='0'; setHover(null); }
   function closeAbout(){ aboutPanel.classList.remove('show'); if(mode==='system') hintEl.style.opacity='0.7'; }
-  aboutPanel.querySelector('.a-close').addEventListener('click', closeAbout);
+  aboutPanel.querySelector('.a-close').addEventListener('click', ()=>writeHash(''));
 
   // fill the about card from content.js
   function buildAbout(){
@@ -815,17 +817,58 @@
     });
   }
 
+  /* ---------- deep links (URL hash <-> state) ----------
+     #ai-thoughts            -> that planet focused
+     #ai-thoughts/eval-design-> that planet + a moon card open
+     #about                  -> the about card open
+     empty                   -> the full system view
+     Navigation goes through writeHash so the back/forward buttons work. */
+  function currentHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')); }
+  function writeHash(h){
+    const target = h || '';
+    if(currentHash() !== target){
+      if(target) location.hash = '#'+target;                       // pushes a history entry
+      else history.replaceState(null, '', location.pathname + location.search); // clears the hash
+    }
+    applyHashState();
+  }
+  function applyHashState(){
+    const h = currentHash();
+    const slash = h.indexOf('/');
+    const pslug = slash<0 ? h : h.slice(0,slash);
+    const mslug = slash<0 ? '' : h.slice(slash+1);
+    if(!h){
+      if(aboutPanel.classList.contains('show')) closeAbout();
+      if(moonPanel.classList.contains('show')) closeMoon();
+      if(focused) pullBack();
+      return;
+    }
+    if(pslug==='about'){
+      if(focused) pullBack();
+      closeMoon();
+      if(!aboutPanel.classList.contains('show')) openAbout();
+      return;
+    }
+    const p = PLANETS.find(x=>x.slug===pslug);
+    if(!p){ writeHash(''); return; }                               // unknown slug -> system
+    if(aboutPanel.classList.contains('show')) closeAbout();
+    if(focused!==p) focusPlanet(p);
+    const m = mslug ? p.moons.find(x=>x.slug===mslug) : null;
+    if(m) openMoon(m, p); else closeMoon();
+  }
+  window.addEventListener('hashchange', applyHashState);
+
   function handleClick(sx,sy){
     const hit = hitTest(sx,sy);
     if(!hit){
-      if(moonPanel.classList.contains('show')) closeMoon();
-      else if(aboutPanel.classList.contains('show')) closeAbout();
+      if(moonPanel.classList.contains('show')) writeHash(focused?focused.slug:'');
+      else if(aboutPanel.classList.contains('show')) writeHash('');
       return;
     }
-    if(hit.type==='planet' && mode==='system'){ focusPlanet(hit.obj); }
-    else if(hit.type==='moon'){ openMoon(hit.obj, hit.parent); }
+    if(hit.type==='planet' && mode==='system'){ writeHash(hit.obj.slug); }
+    else if(hit.type==='moon'){ writeHash(hit.parent.slug + '/' + hit.obj.slug); }
     else if(hit.type==='planet' && mode==='planet'){ /* already focused */ }
-    else if(hit.type==='sun'){ if(mode==='planet') pullBack(); else openAbout(); }
+    else if(hit.type==='sun'){ writeHash(mode==='planet' ? '' : 'about'); }
   }
 
   /* pointer / touch handling (mouse: move=hover; touch: hold=hover, tap=click) */
@@ -886,13 +929,13 @@
     if(e.pointerType==='mouse'){ setHover(null); mouse.active=false; } // parallax eases back, constellations relax
   });
 
-  backBtn.addEventListener('click', pullBack);
+  backBtn.addEventListener('click', ()=>writeHash(''));
 
   window.addEventListener('keydown', e=>{
     if(e.key==='Escape'){
-      if(moonPanel.classList.contains('show')) closeMoon();
-      else if(aboutPanel.classList.contains('show')) closeAbout();
-      else if(mode==='planet') pullBack();
+      if(moonPanel.classList.contains('show')) writeHash(focused?focused.slug:'');
+      else if(aboutPanel.classList.contains('show')) writeHash('');
+      else if(mode==='planet') writeHash('');
     }
   });
 
@@ -903,6 +946,8 @@
     resize();
     view.scale = fitScale; target.scale = fitScale;
     view.cx=0; view.cy=0; target.cx=0; target.cy=0;
+    update(0);          // set initial body positions so a deep-link focus has a valid target
+    applyHashState();   // honor an incoming #planet / #planet/moon / #about link on load
     lastT = performance.now();
     requestAnimationFrame(frame);
   }
