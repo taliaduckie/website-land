@@ -34,6 +34,13 @@ const SITE = {
     }
   },
 
+  // links in the persistent corner bar — edit hrefs to your real URLs
+  social: [
+    { label: 'LinkedIn', href: '#' },
+    { label: 'Substack', href: '#' },
+    { label: 'GitHub',   href: '#' }
+  ],
+
   // varied sizes (emphasis), orbits, eccentricities, periods (slow, all different)
   planets: [
     {

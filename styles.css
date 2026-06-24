@@ -1,7 +1,7 @@
 :root{
-  --ink:#e9ddcc;
-  --ink-dim:#b6a48d;
-  --ink-faint:#8a7a64;
+  --ink:#f6f3ee;
+  --ink-dim:#d6cec3;
+  --ink-faint:#a89a86;
   --panel:rgba(28,20,13,0.92);
   --line:rgba(150,120,80,0.30);
 }
@@ -168,12 +168,34 @@ body{
 #backBtn.show{opacity:1;pointer-events:auto;}
 #backBtn:hover{color:var(--ink);}
 
+/* persistent links (corner bar) */
+#social{
+  position:fixed;
+  right:24px;bottom:22px;
+  z-index:16;
+  display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+  text-align:right;
+}
+#social a{
+  font-family:"IM Fell English",serif;
+  font-size:15px;letter-spacing:.4px;
+  color:#e9e4dc;
+  text-decoration:none;
+  opacity:.85;
+  transition:color .2s ease, opacity .2s ease;
+}
+#social a:hover{color:#d9985a;opacity:1;}
+@media (max-width:560px){
+  #social{right:14px;bottom:46px;gap:5px;}
+  #social a{font-size:13px;}
+}
+
 /* ambient hint */
 #hint{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
   z-index:15;
   font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;
-  color:var(--ink-faint);
+  color:#e9e4dc;
   opacity:.7;
   transition:opacity .4s ease;
   text-align:center;

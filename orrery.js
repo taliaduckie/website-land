@@ -99,127 +99,127 @@
   // placed at fractional anchors, faintly, well away from the centre where the sun sits.
   const CONSTELLATIONS = [
     { // Orion
-      ax:0.15, ay:0.26, scale:0.16, rot:0.05,
+      ax:0.10, ay:0.32, scale:0.16, rot:0.05,
       stars:[[0.30,0.15],[0.62,0.18],[0.40,0.50],[0.50,0.53],[0.60,0.56],[0.34,0.88],[0.70,0.85]],
       edges:[[0,1],[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]
     },
     { // Ursa Major (Big Dipper)
-      ax:0.83, ay:0.19, scale:0.21, rot:-0.06,
+      ax:0.70, ay:0.33, scale:0.18, rot:-0.06,
       stars:[[0.62,0.20],[0.62,0.42],[0.45,0.47],[0.46,0.27],[0.32,0.30],[0.18,0.37],[0.05,0.47]],
       edges:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]]
     },
     { // Cassiopeia (W)
-      ax:0.80, ay:0.80, scale:0.17, rot:0.04,
+      ax:0.92, ay:0.70, scale:0.17, rot:0.04,
       stars:[[0.05,0.30],[0.28,0.62],[0.50,0.25],[0.72,0.64],[0.95,0.28]],
       edges:[[0,1],[1,2],[2,3],[3,4]]
     },
     { // Cygnus (Northern Cross)
-      ax:0.17, ay:0.76, scale:0.16, rot:-0.05,
+      ax:0.74, ay:0.87, scale:0.16, rot:-0.05,
       stars:[[0.50,0.05],[0.50,0.55],[0.50,0.95],[0.15,0.50],[0.85,0.45]],
       edges:[[0,1],[1,2],[3,1],[1,4]]
     },
     { // Lyra
-      ax:0.50, ay:0.11, scale:0.09, rot:0.0,
+      ax:0.49, ay:0.31, scale:0.09, rot:0.0,
       stars:[[0.50,0.08],[0.35,0.45],[0.64,0.50],[0.40,0.88],[0.69,0.92]],
       edges:[[0,1],[0,2],[1,3],[2,4],[3,4]]
     },
     { // Scorpius
-      ax:0.50, ay:0.90, scale:0.22, rot:0.03,
+      ax:0.53, ay:0.91, scale:0.18, rot:0.03,
       stars:[[0.12,0.10],[0.26,0.20],[0.40,0.30],[0.47,0.46],[0.52,0.62],[0.62,0.74],[0.74,0.77],[0.82,0.66]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]
     },
     { // Leo
-      ax:0.11, ay:0.50, scale:0.18, rot:-0.04,
+      ax:0.08, ay:0.49, scale:0.17, rot:-0.04,
       stars:[[0.18,0.72],[0.20,0.52],[0.27,0.36],[0.40,0.30],[0.47,0.42],[0.40,0.55],[0.64,0.58],[0.88,0.66]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[5,6],[6,7],[7,0]]
     },
     { // Gemini
-      ax:0.89, ay:0.52, scale:0.16, rot:0.05,
+      ax:0.93, ay:0.53, scale:0.16, rot:0.05,
       stars:[[0.30,0.10],[0.55,0.12],[0.34,0.35],[0.58,0.35],[0.30,0.62],[0.52,0.60],[0.24,0.85],[0.62,0.82]],
       edges:[[0,2],[2,4],[4,6],[1,3],[3,5],[5,7],[2,3],[4,5]]
     },
     { // Taurus
-      ax:0.32, ay:0.13, scale:0.15, rot:0.0,
+      ax:0.29, ay:0.09, scale:0.15, rot:0.0,
       stars:[[0.50,0.55],[0.40,0.48],[0.30,0.38],[0.18,0.20],[0.58,0.48],[0.70,0.38],[0.85,0.22]],
       edges:[[0,1],[1,2],[2,3],[0,4],[4,5],[5,6]]
     },
     { // Pegasus + Andromeda chain
-      ax:0.62, ay:0.15, scale:0.16, rot:-0.03,
+      ax:0.53, ay:0.12, scale:0.16, rot:-0.03,
       stars:[[0.30,0.22],[0.68,0.20],[0.70,0.58],[0.32,0.60],[0.90,0.12],[0.82,0.40]],
       edges:[[0,1],[1,2],[2,3],[3,0],[1,5],[5,4]]
     },
     { // Bootes (kite)
-      ax:0.92, ay:0.42, scale:0.15, rot:0.04,
+      ax:0.93, ay:0.34, scale:0.15, rot:0.04,
       stars:[[0.50,0.92],[0.34,0.62],[0.30,0.38],[0.50,0.18],[0.70,0.34],[0.66,0.60]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[1,5]]
     },
     { // Crux (Southern Cross)
-      ax:0.74, ay:0.92, scale:0.07, rot:0.0,
+      ax:0.93, ay:0.91, scale:0.07, rot:0.0,
       stars:[[0.50,0.05],[0.50,0.95],[0.15,0.55],[0.85,0.45]],
       edges:[[0,1],[2,3]]
     },
     { // Ursa Minor (Little Dipper)
-      ax:0.93, ay:0.11, scale:0.15, rot:0.06,
+      ax:0.94, ay:0.14, scale:0.15, rot:0.06,
       stars:[[0.20,0.85],[0.32,0.66],[0.44,0.48],[0.56,0.40],[0.68,0.30],[0.70,0.52],[0.58,0.60]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]
     },
     { // Draco (winding)
-      ax:0.50, ay:0.28, scale:0.22, rot:0.0,
+      ax:0.31, ay:0.68, scale:0.18, rot:0.0,
       stars:[[0.10,0.80],[0.22,0.62],[0.30,0.45],[0.42,0.35],[0.55,0.40],[0.60,0.55],[0.52,0.68],[0.62,0.78],[0.78,0.72],[0.86,0.55],[0.78,0.40]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,8]]
     },
     { // Cepheus (house)
-      ax:0.40, ay:0.27, scale:0.11, rot:-0.05,
+      ax:0.34, ay:0.28, scale:0.11, rot:-0.05,
       stars:[[0.50,0.10],[0.20,0.40],[0.25,0.80],[0.75,0.80],[0.80,0.40]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]
     },
     { // Perseus
-      ax:0.27, ay:0.41, scale:0.14, rot:0.04,
+      ax:0.31, ay:0.53, scale:0.14, rot:0.04,
       stars:[[0.50,0.10],[0.45,0.35],[0.40,0.55],[0.30,0.75],[0.55,0.65],[0.65,0.80],[0.58,0.45]],
       edges:[[0,1],[1,2],[2,3],[2,4],[4,5],[1,6]]
     },
     { // Auriga (pentagon)
-      ax:0.72, ay:0.33, scale:0.13, rot:0.0,
+      ax:0.74, ay:0.09, scale:0.13, rot:0.0,
       stars:[[0.50,0.08],[0.78,0.35],[0.66,0.75],[0.30,0.78],[0.20,0.38]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]
     },
     { // Sagittarius (teapot)
-      ax:0.30, ay:0.88, scale:0.16, rot:0.02,
+      ax:0.30, ay:0.87, scale:0.16, rot:0.02,
       stars:[[0.20,0.40],[0.35,0.30],[0.45,0.45],[0.30,0.55],[0.55,0.35],[0.60,0.55],[0.45,0.60],[0.70,0.25]],
       edges:[[0,1],[1,2],[2,3],[3,0],[1,4],[4,5],[5,2],[5,6],[4,7]]
     },
     { // Canis Major
-      ax:0.10, ay:0.90, scale:0.13, rot:-0.04,
+      ax:0.11, ay:0.90, scale:0.13, rot:-0.04,
       stars:[[0.40,0.30],[0.55,0.45],[0.45,0.60],[0.30,0.55],[0.65,0.70],[0.50,0.80],[0.70,0.40]],
       edges:[[0,1],[1,2],[2,3],[3,0],[2,4],[4,5],[1,6]]
     },
     { // Corona Borealis (arc)
-      ax:0.86, ay:0.56, scale:0.08, rot:0.0,
+      ax:0.52, ay:0.70, scale:0.08, rot:0.0,
       stars:[[0.10,0.50],[0.20,0.35],[0.35,0.28],[0.50,0.30],[0.65,0.38],[0.78,0.50],[0.88,0.66]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]
     },
     { // Hercules (keystone)
-      ax:0.60, ay:0.46, scale:0.12, rot:0.03,
+      ax:0.72, ay:0.48, scale:0.12, rot:0.03,
       stars:[[0.40,0.35],[0.60,0.32],[0.66,0.55],[0.44,0.58],[0.30,0.18],[0.74,0.16],[0.24,0.78],[0.80,0.80]],
       edges:[[0,1],[1,2],[2,3],[3,0],[0,4],[1,5],[3,6],[2,7]]
     },
     { // Aquarius
-      ax:0.13, ay:0.14, scale:0.14, rot:0.0,
+      ax:0.07, ay:0.13, scale:0.14, rot:0.0,
       stars:[[0.15,0.40],[0.35,0.35],[0.50,0.45],[0.55,0.30],[0.68,0.40],[0.80,0.55],[0.60,0.60]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[2,6]]
     },
     { // Delphinus (small)
-      ax:0.45, ay:0.61, scale:0.05, rot:0.0,
+      ax:0.50, ay:0.49, scale:0.05, rot:0.0,
       stars:[[0.40,0.30],[0.55,0.22],[0.62,0.38],[0.48,0.46],[0.55,0.62]],
       edges:[[0,1],[1,2],[2,3],[3,0],[3,4]]
     },
     { // Aquila (eagle)
-      ax:0.07, ay:0.60, scale:0.12, rot:0.03,
+      ax:0.07, ay:0.70, scale:0.12, rot:0.03,
       stars:[[0.50,0.45],[0.50,0.20],[0.50,0.70],[0.28,0.40],[0.72,0.50],[0.20,0.30],[0.80,0.60]],
       edges:[[1,0],[0,2],[3,0],[0,4],[5,3],[4,6]]
     },
     { // Corvus (the crow)
-      ax:0.92, ay:0.86, scale:0.10, rot:-0.04,
+      ax:0.71, ay:0.71, scale:0.10, rot:-0.04,
       stars:[[0.30,0.20],[0.65,0.25],[0.72,0.65],[0.38,0.70],[0.20,0.45]],
       edges:[[0,1],[1,2],[2,3],[3,0],[3,4]]
     }
@@ -249,7 +249,39 @@
   }
 
   // precompute constellation star positions (screen px) + a per-star opacity that we lerp
+  let constPlaced = false;
+  function constLocalRadius(c){    // half-size as a fraction of minDim
+    let m=0;
+    for(const s of c.stars){ const dx=s[0]-0.5, dy=s[1]-0.5; m=Math.max(m, Math.hypot(dx,dy)); }
+    return m * c.scale;
+  }
+  // scatter constellations to random, non-overlapping anchors (once, at first layout)
+  function placeConstellations(){
+    const minDim = Math.min(W,H), pad = 10;
+    const order = CONSTELLATIONS.map(c=>({ c, r: constLocalRadius(c)*minDim }))
+                                .sort((a,b)=> b.r - a.r);   // place the biggest first
+    const done = [];
+    for(const it of order){
+      const r = it.r;
+      const minX=r+pad, maxX=Math.max(r+pad, W-r-pad);
+      const minY=r+pad, maxY=Math.max(r+pad, H-r-pad);
+      let bx=W*0.5, by=H*0.5;
+      for(let a=0;a<500;a++){
+        const relax = a>300 ? 0.55 : 1;   // loosen spacing if it gets hard to fit
+        const x = minX + Math.random()*(maxX-minX);
+        const y = minY + Math.random()*(maxY-minY);
+        let good = true;
+        for(const p of done){ if(Math.hypot(x-p.x,y-p.y) < (r+p.r)*relax + pad){ good=false; break; } }
+        if(good){ bx=x; by=y; break; }
+      }
+      done.push({ x:bx, y:by, r });
+      it.c.ax = bx/W; it.c.ay = by/H;
+    }
+    constPlaced = true;
+  }
+
   function buildConstellations(){
+    if(!constPlaced) placeConstellations();
     constItems = [];
     const minDim = Math.min(W,H);
     CONSTELLATIONS.forEach(c=>{
@@ -604,7 +636,7 @@
       const s = toScreen(0,0,par.sun.x,par.sun.y);
       const a = (focused ? otherAlpha : 1);
       ctx.font = '700 italic 15px "IM Fell English", serif';
-      ctx.fillStyle = rgba(hexRgb('#e9ddcc'), 0.78*a);
+      ctx.fillStyle = rgba(hexRgb('#f6f3ee'), 0.78*a);
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
     }
 
@@ -617,7 +649,7 @@
       if(a<=0.03) return;
       const s = toScreen(p.wx,p.wy,par.planet.x,par.planet.y);
       ctx.font = '700 ' + Math.round(15 + p.r*0.10) + 'px "IM Fell English", serif';
-      ctx.fillStyle = rgba(hexRgb('#e9ddcc'), a);
+      ctx.fillStyle = rgba(hexRgb('#f6f3ee'), a);
       ctx.fillText(p.name, s.x, s.y + p.r*view.scale + 10);
     });
 
@@ -626,7 +658,7 @@
       const m = hoverObj.obj;
       const s = toScreen(m.wx,m.wy,par.planet.x,par.planet.y);
       ctx.font = '700 13px "IM Fell English", serif';
-      ctx.fillStyle = rgba(hexRgb('#d9cbb6'), prog);
+      ctx.fillStyle = rgba(hexRgb('#ece6dc'), prog);
       ctx.fillText(m.name, s.x, s.y + m.r*view.scale + 8);
     }
   }
@@ -768,6 +800,21 @@
     });
   }
 
+  // build the persistent corner links from content.js (SITE.social)
+  function buildSocial(){
+    const el = document.getElementById('social');
+    if(!el) return;
+    el.innerHTML = '';
+    (SITE.social||[]).forEach(l=>{
+      const a = document.createElement('a');
+      a.href = l.href || '#';
+      a.textContent = l.label;
+      a.target = '_blank'; a.rel = 'noopener';
+      if((l.href||'#')==='#') a.addEventListener('click', e=>e.preventDefault());
+      el.appendChild(a);
+    });
+  }
+
   function handleClick(sx,sy){
     const hit = hitTest(sx,sy);
     if(!hit){
@@ -852,6 +899,7 @@
   /* boot ur boot */
   function boot(){
     buildAbout();
+    buildSocial();
     resize();
     view.scale = fitScale; target.scale = fitScale;
     view.cx=0; view.cy=0; target.cx=0; target.cy=0;
