@@ -56,14 +56,15 @@
   }));
 
   // precompute orbit semi-minor + initial angles + a slightly tinted material color for moons
+  const ORBIT_SPEED = 1;   // global speed for all orbits (1 = original, lower = calmer)
   PLANETS.forEach(p=>{
     p.b = p.a * Math.sqrt(1 - p.e*p.e);
     p.angle = p.rot * 1.7; // staggered phases
-    p.angSpeed = (Math.PI*2)/p.period;
+    p.angSpeed = (Math.PI*2)/p.period * ORBIT_SPEED;
     p.wx = 0; p.wy = 0;
     p.moons.forEach(m=>{
       m.b = m.dr * Math.sqrt(1 - m.e*m.e);
-      m.angSpeed = (Math.PI*2)/m.period;
+      m.angSpeed = (Math.PI*2)/m.period * ORBIT_SPEED;
       m.color = mix(p.color, {r:150,g:138,b:122}, 0.45); // muted stone with domain tint
       m.wx=0; m.wy=0;
     });
@@ -330,7 +331,7 @@
   /* ---------- pointer / parallax / comet state ---------- */
   const mouse = { x:0, y:0, active:false };
   let pmx=0, pmy=0, pmtx=0, pmty=0;                  // parallax: smoothed + target, each in [-1,1]
-  const PX_BG=4, PX_SUN=6, PX_RING=8, PX_PLANET=12;  // max screen-px shift per depth layer
+  const PX_BG=2, PX_SUN=3, PX_RING=4, PX_PLANET=6;  // max screen-px shift per depth layer
   const par = { bg:{x:0,y:0}, sun:{x:0,y:0}, ring:{x:0,y:0}, planet:{x:0,y:0} };
   let constItems = [];          // live constellation geometry (screen px) for cursor activation
   const trail = [];             // comet-trail points {x,y,life}
