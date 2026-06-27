@@ -16,19 +16,15 @@
   const backBtn = document.getElementById('backBtn');
   const hintEl = document.getElementById('hint');
 
-  /* ---------- color helpers (muted velvia-adjacent palette) ---------- */
-  const SHADOW = {r:34, g:28, b:25}; // neutral (faintly warm) shadow — keeps bodies material, not cool/recessed
+  const SHADOW = {r:34, g:28, b:25};
   function hexRgb(h){ h=h.replace('#',''); return {r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16)}; }
   function rgba(c,a){ return 'rgba('+(c.r|0)+','+(c.g|0)+','+(c.b|0)+','+(a===undefined?1:a)+')'; }
   function lighten(c,f){ return {r:c.r+(255-c.r)*f, g:c.g+(255-c.g)*f, b:c.b+(255-c.b)*f}; }
   function darken(c,f){ return {r:c.r*(1-f), g:c.g*(1-f), b:c.b*(1-f)}; }
   function mix(a,b,t){ return {r:a.r+(b.r-a.r)*t, g:a.g+(b.g-a.g)*t, b:a.b+(b.b-a.b)*t}; }
-  // bebb deterministic PRNG so patterns are stable across frames (seeded per planet)
-  function rng(seed){ let s=(seed*2654435761)%2147483647; if(s<=0) s+=2147483646; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; }
-  // url-safe slug for deep links, e.g. "AI thoughts" -> "ai-thoughts"
+  function rng(seed){ let s=(seed*2654435761)%2147483647; if(s<=0) s+=2147483646; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; } // bebb
   function slugify(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 
-  /* ---------- build runtime model from content.js (SITE) ---------- */
   const SUN = {
     label: SITE.sun.label,
     desc:  SITE.sun.desc,
@@ -39,13 +35,13 @@
   const PLANETS = SITE.planets.map((p,idx)=>({
     name:p.name, desc:p.desc, color:hexRgb(p.color), r:p.r, slug:slugify(p.name),
     a:p.a, e:p.e, period:p.period, rot:p.rot,
-    pattern: p.pattern || 'glass', seed: idx+1,   // all planets glassy by default; set pattern:'none' to disable
+    pattern: p.pattern || 'glass', seed: idx+1,   // pattern:'none' to disable
     ring: p.ring ? {
       inner: p.ring.inner!=null ? p.ring.inner : 1.4,
       outer: p.ring.outer!=null ? p.ring.outer : 2.1,
       tilt:  p.ring.tilt!=null  ? p.ring.tilt  : 0.33,
       angle: p.ring.angle!=null ? p.ring.angle : -0.5,
-      alpha: p.ring.alpha!=null ? p.ring.alpha : 1,   // 0..1 overall ring opacity
+      alpha: p.ring.alpha!=null ? p.ring.alpha : 1,
       color: hexRgb(p.ring.color || '#bfae8c')
     } : null,
     moons: p.moons.map(m=>({
@@ -55,8 +51,7 @@
     }))
   }));
 
-  // precompute orbit semi-minor + initial angles + a slightly tinted material color for moons
-  const ORBIT_SPEED = 1;   // global speed for all orbits (1 = original, lower = calmer)
+  const ORBIT_SPEED = 1;   // 1 = original, lower = calmer
   PLANETS.forEach(p=>{
     p.b = p.a * Math.sqrt(1 - p.e*p.e);
     p.angle = p.rot * 1.7; // staggered phases
@@ -65,16 +60,15 @@
     p.moons.forEach(m=>{
       m.b = m.dr * Math.sqrt(1 - m.e*m.e);
       m.angSpeed = (Math.PI*2)/m.period * ORBIT_SPEED;
-      m.color = mix(p.color, {r:150,g:138,b:122}, 0.45); // muted stone with domain tint
+      m.color = mix(p.color, {r:150,g:138,b:122}, 0.45);
       m.wx=0; m.wy=0;
     });
   });
 
-  /* ---------- viewport / camera ---------- */
   let W=0, H=0, DPR=1;
   let fitScale=1;
-  const view = { scale:1, cx:0, cy:0 };          // current
-  const target = { scale:1, cx:0, cy:0 };        // eased toward
+  const view = { scale:1, cx:0, cy:0 };
+  const target = { scale:1, cx:0, cy:0 };
   let systemExtent = 600;
 
   function computeFit(){
@@ -88,18 +82,15 @@
     return Math.min(W,H) / (2*(maxMoon + p.r + 36)) * 0.82;
   }
 
-  /* ---------- night-sky background (prebaked to an offscreen canvas) ---------- */
   const bgCanvas = document.createElement('canvas');
   const bgctx = bgCanvas.getContext('2d');
 
-  // sparse scattered stars (fixed fractional positions so they never twinkle/jump)
   const scatter = [];
   for(let i=0;i<320;i++){
     scatter.push({ fx:Math.random(), fy:Math.random(), r:0.3+Math.random()*0.9, a:0.04+Math.random()*0.13 });
   }
 
-  // real constellation asterisms — stars in local 0..1 space (y down), edges by index.
-  // placed at fractional anchors, faintly, well away from the centre where the sun sits.
+  // constellations: stars in local 0..1 space (y down), edges by index
   const CONSTELLATIONS = [
     { // Orion
       ax:0.10, ay:0.32, scale:0.16, rot:0.05,
@@ -240,29 +231,24 @@
     g.addColorStop(1,    '#05080f');
     bgctx.fillStyle = g; bgctx.fillRect(0,0,W,H);
 
-    // scattered faint stars
     scatter.forEach(s=>{
       bgctx.beginPath();
       bgctx.arc(s.fx*W, s.fy*H, s.r, 0, Math.PI*2);
       bgctx.fillStyle = 'rgba(205,214,230,'+s.a+')';
       bgctx.fill();
     });
-
-    // (constellations are drawn live each frame in drawConstellations so they can react to the cursor)
   }
 
-  // precompute constellation star positions (screen px) + a per-star opacity that we lerp
   let constPlaced = false;
   function constLocalRadius(c){    // half-size as a fraction of minDim
     let m=0;
     for(const s of c.stars){ const dx=s[0]-0.5, dy=s[1]-0.5; m=Math.max(m, Math.hypot(dx,dy)); }
     return m * c.scale;
   }
-  // scatter constellations to random, non-overlapping anchors (once, at first layout)
   function placeConstellations(){
     const minDim = Math.min(W,H), pad = 10;
     const order = CONSTELLATIONS.map(c=>({ c, r: constLocalRadius(c)*minDim }))
-                                .sort((a,b)=> b.r - a.r);   // place the biggest first
+                                .sort((a,b)=> b.r - a.r);   // biggest first
     const done = [];
     for(const it of order){
       const r = it.r;
@@ -270,7 +256,7 @@
       const minY=r+pad, maxY=Math.max(r+pad, H-r-pad);
       let bx=W*0.5, by=H*0.5;
       for(let a=0;a<500;a++){
-        const relax = a>300 ? 0.55 : 1;   // loosen spacing if it gets hard to fit
+        const relax = a>300 ? 0.55 : 1;   // loosen if it gets hard to fit
         const x = minX + Math.random()*(maxX-minX);
         const y = minY + Math.random()*(maxY-minY);
         let good = true;
@@ -321,39 +307,34 @@
     return { x: (sx-W/2-(ox||0))/view.scale + view.cx, y: (sy-H/2-(oy||0))/view.scale + view.cy };
   }
 
-  /* ---------- state ---------- */
   let mode = 'system';          // 'system' | 'planet'
-  let focused = null;           // focused planet
+  let focused = null;
   let focusTargetScale = 1;
   let hoverObj = null;          // {type, obj, parent?}
   let lastT = performance.now();
 
-  /* ---------- pointer / parallax / comet state ---------- */
   const mouse = { x:0, y:0, active:false };
-  let pmx=0, pmy=0, pmtx=0, pmty=0;                  // parallax: smoothed + target, each in [-1,1]
-  const PX_BG=2, PX_SUN=3, PX_RING=4, PX_PLANET=6;  // max screen-px shift per depth layer
+  let pmx=0, pmy=0, pmtx=0, pmty=0;                  // smoothed + target, [-1,1]
+  const PX_BG=2, PX_SUN=3, PX_RING=4, PX_PLANET=6;  // max shift per depth layer
   const par = { bg:{x:0,y:0}, sun:{x:0,y:0}, ring:{x:0,y:0}, planet:{x:0,y:0} };
-  let constItems = [];          // live constellation geometry (screen px) for cursor activation
-  const trail = [];             // comet-trail points {x,y,life}
+  let constItems = [];
+  const trail = [];             // {x,y,life}
   const cometCanvas = document.getElementById('comet');
   const cctx = cometCanvas.getContext('2d');
 
-  function applyWorld(offx,offy){ // world transform for a layer shifted by (offx,offy) screen px
+  function applyWorld(offx,offy){
     ctx.setTransform(DPR,0,0,DPR,0,0);
     ctx.translate(W/2+offx, H/2+offy);
     ctx.scale(view.scale, view.scale);
     ctx.translate(-view.cx, -view.cy);
   }
 
-  /* ---------- drawing a material body (no glow) ---------- */
-  // "blown-glass ?" surface: marbled translucent streaks + a small glossy sheen,
-  // all clipped to the body. det. per seed so it doesn't shimmer.
+  // "blown-glass ?" surface: marbled streaks + a glossy sheen, clipped, seeded
   function drawGlass(x,y,r,base,alpha,seed){
     const rnd = rng(seed);
     let dx=-x, dy=-y, len=Math.hypot(dx,dy)||1; const nx=dx/len, ny=dy/len;
     ctx.save();
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.clip();
-    // swirling glassy streaks
     for(let i=0;i<7;i++){
       const ang = rnd()*Math.PI;
       const rx = r*(0.45+rnd()*0.75), ry = r*(0.12+rnd()*0.38);
@@ -365,7 +346,6 @@
       ctx.strokeStyle = rgba(tint, 0.085*alpha);
       ctx.stroke();
     }
-    // glossy sheen toward the lit side
     const hx = x + nx*r*0.42, hy = y + ny*r*0.42;
     const sheen = ctx.createRadialGradient(hx,hy, 0, hx,hy, r*0.62);
     sheen.addColorStop(0, 'rgba(255,251,242,'+(0.18*alpha)+')');
@@ -376,13 +356,13 @@
 
   function drawBody(x,y,r,base,alpha,opts){
     if(alpha<=0) return;
-    // soft colored bloom around the galactic bods 
+    // soft colored bloom around the galactic bods
     const gl = ctx.createRadialGradient(x,y, r*0.82, x,y, r*1.95);
     gl.addColorStop(0, rgba(lighten(base,0.22), 0.17*alpha));
     gl.addColorStop(1, rgba(lighten(base,0.22), 0));
     ctx.beginPath(); ctx.arc(x,y, r*1.95, 0, Math.PI*2);
     ctx.fillStyle = gl; ctx.fill();
-    // light direction = toward sun (origin)
+    // light toward sun (origin)
     let dx = -x, dy = -y, len = Math.hypot(dx,dy)||1;
     const nx = dx/len, ny = dy/len;
     const hlx = x + nx*r*0.5, hly = y + ny*r*0.5;
@@ -395,7 +375,7 @@
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
     ctx.fillStyle = g; ctx.fill();
 
-    // terminator shadow on the far side, clipped (material, not glowy)
+    // terminator shadow, clipped
     ctx.save();
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.clip();
     const shx = x - nx*r*0.55, shy = y - ny*r*0.55;
@@ -407,28 +387,26 @@
 
     if(opts && opts.pattern==='glass') drawGlass(x,y,r,base,alpha,opts.seed||1);
 
-    // faint dark rim for solidity
+    // faint rim
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
     ctx.lineWidth = Math.max(0.6, 1.1/view.scale);
     ctx.strokeStyle = rgba(darken(base,0.6), 0.45*alpha);
     ctx.stroke();
   }
 
-  // a saturn-style ring: (not uranus!!) 'back' half drawn before the body, 'front' half after,
-  // so the planet correctly occludes the far arc
+  // saturn-style ring (not uranus!!): back half before body, front half after
   function drawRingHalf(x,y,r,alpha,ring,half){
     alpha *= (ring.alpha!=null ? ring.alpha : 1);
     const ro = r*ring.outer, ri = r*ring.inner, sq = ring.tilt, ang = ring.angle;
     const BIG = ro*3;
     ctx.save();
-    // clip to the near/far half plane, split along ring's axis
     ctx.translate(x,y); ctx.rotate(ang);
     ctx.beginPath();
     if(half==='front') ctx.rect(-BIG, 0, BIG*2, BIG);
     else               ctx.rect(-BIG, -BIG, BIG*2, BIG);
     ctx.clip();
     ctx.rotate(-ang); ctx.translate(-x,-y);
-    // annulus hehe (outer ellipse minus inner ellipse via even-odd)
+    // annulus hehe (even-odd)
     ctx.beginPath();
     ctx.ellipse(x,y, ro, ro*sq, ang, 0, Math.PI*2);
     ctx.ellipse(x,y, ri, ri*sq, ang, 0, Math.PI*2);
@@ -450,7 +428,7 @@
 
   function drawSun(){
     const r = SUN.r, base = SUN.color;
-    // material warm body, off-center highlight, limb darkening, no halo (i can see ur halooooo)
+    // no halo (i can see ur halooooo)
     const g = ctx.createRadialGradient(-r*0.28, -r*0.28, r*0.05, 0, 0, r*1.12);
     g.addColorStop(0,   rgba(lighten(base,0.55),1));
     g.addColorStop(0.45,rgba(base,1));
@@ -475,14 +453,12 @@
     ctx.shadowColor = 'rgba(198,174,130,'+(0.55*alpha)+')';
     ctx.shadowBlur = 7;
     ctx.stroke();
-    // second soft pass to bloom the glow a little
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = 14;   // second pass blooms the glow
     ctx.strokeStyle = 'rgba(180,160,124,'+(0.10*alpha)+')';
     ctx.stroke();
     ctx.restore();
   }
 
-  /* ---------- positions ---------- */
   function ellipsePos(a,b,angle,rot){
     const ex = a*Math.cos(angle), ey = b*Math.sin(angle);
     const c = Math.cos(rot), s = Math.sin(rot);
@@ -510,16 +486,14 @@
       });
     });
 
-    // keep camera locked onto the (frozen) focused planet
     if(focused){ target.cx = focused.wx; target.cy = focused.wy; }
 
     // ease camera shit
-    const k = 1 - Math.pow(0.0009, dt); // smooth, frame-rate independent
+    const k = 1 - Math.pow(0.0009, dt);
     view.scale += (target.scale - view.scale)*k;
     view.cx    += (target.cx    - view.cx)*k;
     view.cy    += (target.cy    - view.cy)*k;
 
-    // parallax: lerp the smoothed mouse toward target (the lag is what makes it feel physical)
     if(!mouse.active){ pmtx=0; pmty=0; }
     pmx += (pmtx-pmx)*0.05; pmy += (pmty-pmy)*0.05;
     par.bg.x=pmx*PX_BG;         par.bg.y=pmy*PX_BG;
@@ -527,22 +501,17 @@
     par.ring.x=pmx*PX_RING;     par.ring.y=pmy*PX_RING;
     par.planet.x=pmx*PX_PLANET; par.planet.y=pmy*PX_PLANET;
 
-    // comet trail evaporates — multiplicative life decay, drop the faint tail
     for(let i=trail.length-1;i>=0;i--){ trail[i].life *= 0.9; if(trail[i].life < 0.03) trail.splice(i,1); }
   }
 
-  /* ---------- render ---------- */
   function render(){
-    // background layer (parallax par.bg) — fill base first so the shifted blit never seams
     ctx.setTransform(1,0,0,1,0,0);
     ctx.fillStyle = '#05080f'; ctx.fillRect(0,0,W*DPR,H*DPR);
     ctx.drawImage(bgCanvas, par.bg.x*DPR, par.bg.y*DPR);
     ctx.setTransform(DPR,0,0,DPR,0,0);
 
-    // live constellation layer (reacts to the cursor), rides the background parallax
     drawConstellations();
 
-    // focus progress 0..1 (drives moon fade + dimming of other planets)
     let prog = 0;
     if(focused){
       prog = (view.scale - fitScale) / (focusTargetScale - fitScale);
@@ -550,7 +519,6 @@
     }
     const otherAlpha = focused ? (1 - prog*0.92) : 1;
 
-    // orbit-rings layer (parallax par.ring)
     // this is taking FOREVER wauhgh
     applyWorld(par.ring.x, par.ring.y);
     PLANETS.forEach(p=>{
@@ -564,11 +532,9 @@
       ctx.restore();
     }
 
-    // sun layer (parallax par.sun)
     applyWorld(par.sun.x, par.sun.y);
     drawSun();
 
-    // planets + moons layer (parallax par.planet — the largest shift, reads as nearest)
     applyWorld(par.planet.x, par.planet.y);
     PLANETS.forEach(p=>{
       const a = (p===focused) ? 1 : otherAlpha;
@@ -580,16 +546,12 @@
       focused.moons.forEach(m=>{ drawBody(m.wx,m.wy,m.r,m.color,prog); });
     }
 
-    // screen-space labels
     ctx.setTransform(DPR,0,0,DPR,0,0);
     drawLabels(prog, otherAlpha);
 
-    // comet overlay (its own canvas, on top)
     drawComet();
   }
 
-  // constellations: each star's opacity eases toward a target set by cursor proximity;
-  // a line brightens with the dimmer of its two endpoints. No snap, just slow notice.
   function drawConstellations(){
     const ox = par.bg.x, oy = par.bg.y;
     ctx.lineWidth = 1;
@@ -599,9 +561,9 @@
         let tgt = 0.16;
         if(mouse.active){
           const d = Math.hypot((p.bx+ox)-mouse.x, (p.by+oy)-mouse.y);
-          if(d < 90) tgt = 0.16 + (0.7-0.16)*(1 - d/90); // inverse-distance up to ~0.7
+          if(d < 90) tgt = 0.16 + (0.7-0.16)*(1 - d/90);
         }
-        p.op += (tgt - p.op)*0.08; // slow lerp toward target
+        p.op += (tgt - p.op)*0.08;
       }
       for(const e of item.edges){
         const a = pts[e[0]], b = pts[e[1]];
@@ -616,7 +578,6 @@
     }
   }
 
-  // comet trail: soft evaporating blobs, white with a faint warm-yellow tint
   function drawComet(){
     cctx.setTransform(DPR,0,0,DPR,0,0);
     cctx.clearRect(0,0,W,H);
@@ -634,7 +595,6 @@
     ctx.textAlign='center';
     ctx.textBaseline='top';
 
-    // sun label (centerpiece) — rides the sun layer's parallax
     {
       const s = toScreen(0,0,par.sun.x,par.sun.y);
       const a = (focused ? otherAlpha : 1);
@@ -643,7 +603,7 @@
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
     }
 
-    // planet labels — only the hovered planet (paused) or the focused planet
+    // only the hovered (paused) or focused planet
     PLANETS.forEach(p=>{
       const hovered = hoverObj && hoverObj.obj===p;
       let a = 0;
@@ -656,7 +616,7 @@
       ctx.fillText(p.name, s.x, s.y + p.r*view.scale + 10);
     });
 
-    // moon labels — only the hovered (paused) moon
+    // only the hovered moon
     if(focused && prog>0.25 && hoverObj && hoverObj.type==='moon'){
       const m = hoverObj.obj;
       const s = toScreen(m.wx,m.wy,par.planet.x,par.planet.y);
@@ -666,7 +626,6 @@
     }
   }
 
-  /* ---------- main loop ---------- */
   function frame(now){
     let dt = (now-lastT)/1000; lastT = now;
     if(dt>0.05) dt=0.05; // clamp after tab-switch
@@ -676,11 +635,9 @@
     requestAnimationFrame(frame);
   }
 
-  /* ---------- hit testing ---------- */
   function hitTest(sx,sy){
-    const w = toWorld(sx,sy,par.planet.x,par.planet.y); // planets/moons live in the planet layer
+    const w = toWorld(sx,sy,par.planet.x,par.planet.y);
     if(focused){
-      // moons of focused planet first
       for(const m of focused.moons){
         const rr = Math.max(m.r, 14/view.scale); // generous touch target
         if(Math.hypot(w.x-m.wx, w.y-m.wy) <= rr*1.25) return {type:'moon', obj:m, parent:focused};
@@ -689,7 +646,6 @@
       if(Math.hypot(w.x-focused.wx, w.y-focused.wy) <= pr) return {type:'planet', obj:focused};
       return null;
     }
-    // system view: planets, then sun
     let best=null, bestD=Infinity;
     for(const p of PLANETS){
       const rr = Math.max(p.r, 18/view.scale);
@@ -697,12 +653,11 @@
       if(d<=rr*1.2 && d<bestD){ best={type:'planet',obj:p}; bestD=d; }
     }
     if(best) return best;
-    const ws = toWorld(sx,sy,par.sun.x,par.sun.y); // sun sits in its own layer
+    const ws = toWorld(sx,sy,par.sun.x,par.sun.y); // sun is its own layer
     if(Math.hypot(ws.x, ws.y) <= SUN.r*1.1) return {type:'sun', obj:SUN};
     return null;
   }
 
-  /* ---------- tooltip ---------- */
   function showTip(obj){
     tipName.textContent = obj.name || obj.label || '';
     tipDesc.textContent = obj.desc || '';
@@ -721,7 +676,6 @@
     tipEl.style.top  = (s.y - r*view.scale - 14) + 'px';
   }
 
-  /* ---------- interactions ---------- */
   function setHover(obj){
     if(obj===hoverObj || (obj && hoverObj && obj.obj===hoverObj.obj)) {
       hoverObj = obj; return;
@@ -762,7 +716,7 @@
     mBody.textContent = m.body;
     mLink.href = m.href || '#';
     moonPanel.classList.add('show');
-    // position card near moon (clamped to view)
+    // place near moon, clamped to view
     const s = toScreen(m.wx,m.wy);
     const cw = moonPanel.offsetWidth || 320, ch = moonPanel.offsetHeight || 200;
     let left = s.x + 24, top = s.y - ch/2;
@@ -780,7 +734,6 @@
   function closeAbout(){ aboutPanel.classList.remove('show'); if(mode==='system') hintEl.style.opacity='0.7'; }
   aboutPanel.querySelector('.a-close').addEventListener('click', ()=>writeHash(''));
 
-  // fill the about card from content.js
   function buildAbout(){
     const a = SITE.sun.about || {};
     const kickerEl = aboutPanel.querySelector('.a-kicker');
@@ -803,7 +756,6 @@
     });
   }
 
-  // build the persistent corner links from content.js (SITE.social)
   function buildSocial(){
     const el = document.getElementById('social');
     if(!el) return;
@@ -818,18 +770,13 @@
     });
   }
 
-  /* ---------- deep links (URL hash <-> state) ----------
-     #ai-thoughts            -> that planet focused
-     #ai-thoughts/eval-design-> that planet + a moon card open
-     #about                  -> the about card open
-     empty                   -> the full system view
-     Navigation goes through writeHash so the back/forward buttons work. */
+  // url hash <-> state (so back/forward work)
   function currentHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')); }
   function writeHash(h){
     const target = h || '';
     if(currentHash() !== target){
-      if(target) location.hash = '#'+target;                       // pushes a history entry
-      else history.replaceState(null, '', location.pathname + location.search); // clears the hash
+      if(target) location.hash = '#'+target;
+      else history.replaceState(null, '', location.pathname + location.search);
     }
     applyHashState();
   }
@@ -851,7 +798,7 @@
       return;
     }
     const p = PLANETS.find(x=>x.slug===pslug);
-    if(!p){ writeHash(''); return; }                               // unknown slug -> system
+    if(!p){ writeHash(''); return; }
     if(aboutPanel.classList.contains('show')) closeAbout();
     if(focused!==p) focusPlanet(p);
     const m = mslug ? p.moons.find(x=>x.slug===mslug) : null;
@@ -872,11 +819,10 @@
     else if(hit.type==='sun'){ writeHash(mode==='planet' ? '' : 'about'); }
   }
 
-  /* pointer / touch handling (mouse: move=hover; touch: hold=hover, tap=click) */
+  // pointer / touch handling
   let down=null, holdTimer=null, holdActive=false, moved=false;
   const HOLD_MS=300, MOVE_TOL=12;
 
-  // mouse move feeds three things: parallax target, the comet trail, and hover
   function onMouseMove(x,y){
     mouse.x=x; mouse.y=y; mouse.active=true;
     pmtx = Math.max(-1, Math.min(1, (x - W/2)/(W/2)));
@@ -891,7 +837,6 @@
       setHover(hitTest(e.clientX, e.clientY));
       return;
     }
-    // touch
     if(down){
       const dist = Math.hypot(e.clientX-down.x, e.clientY-down.y);
       if(dist>MOVE_TOL){ moved=true; if(holdTimer){clearTimeout(holdTimer);holdTimer=null;} }
@@ -905,7 +850,7 @@
     if(e.pointerType!=='mouse'){
       holdTimer = setTimeout(()=>{
         holdActive=true;
-        setHover(hitTest(down.x, down.y)); // touch-and-hold == hover (pauses orbit)
+        setHover(hitTest(down.x, down.y)); // hold == hover
       }, HOLD_MS);
     }
   });
@@ -915,10 +860,9 @@
     const wasHold = holdActive;
     const small = down && Math.hypot(e.clientX-down.x, e.clientY-down.y) <= MOVE_TOL;
     if(wasHold){
-      // releasing a hold ends the hover (resumes orbit)
       if(e.pointerType!=='mouse') setHover(null);
     } else if(small && !moved){
-      handleClick(e.clientX, e.clientY); // tap / mouse click
+      handleClick(e.clientX, e.clientY); // tap / click
     }
     holdActive=false; down=null;
   });
@@ -927,7 +871,7 @@
     holdActive=false; down=null; setHover(null);
   });
   canvas.addEventListener('pointerleave', e=>{
-    if(e.pointerType==='mouse'){ setHover(null); mouse.active=false; } // parallax eases back, constellations relax
+    if(e.pointerType==='mouse'){ setHover(null); mouse.active=false; }
   });
 
   backBtn.addEventListener('click', ()=>writeHash(''));
@@ -947,8 +891,8 @@
     resize();
     view.scale = fitScale; target.scale = fitScale;
     view.cx=0; view.cy=0; target.cx=0; target.cy=0;
-    update(0);          // set initial body positions so a deep-link focus has a valid target
-    applyHashState();   // honor an incoming #planet / #planet/moon / #about link on load
+    update(0);
+    applyHashState();
     lastT = performance.now();
     requestAnimationFrame(frame);
   }
