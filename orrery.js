@@ -663,6 +663,7 @@
     // slingshot: fling opposite the pull-back
     bodies.push({ x:aim.x0, y:aim.y0, vx:(aim.x0-aim.x1)*LAUNCH, vy:(aim.y0-aim.y1)*LAUNCH, trail:[] });
     if(bodies.length > 40) bodies.shift();
+    firstPull = false;   // teaching arrow only shows until the first launch
   }
   function drawSandbox(){
     for(const bd of bodies){
