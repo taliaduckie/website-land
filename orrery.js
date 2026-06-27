@@ -660,7 +660,8 @@
   }
   function launchBody(){
     if(!aim) return;
-    bodies.push({ x:aim.x0, y:aim.y0, vx:(aim.x1-aim.x0)*LAUNCH, vy:(aim.y1-aim.y0)*LAUNCH, trail:[] });
+    // slingshot: fling opposite the pull-back
+    bodies.push({ x:aim.x0, y:aim.y0, vx:(aim.x0-aim.x1)*LAUNCH, vy:(aim.y0-aim.y1)*LAUNCH, trail:[] });
     if(bodies.length > 40) bodies.shift();
   }
   function drawSandbox(){
@@ -943,6 +944,7 @@
   });
 
   canvas.addEventListener('pointerdown', e=>{
+    if(gameOn){ const w=toWorld(e.clientX,e.clientY,par.planet.x,par.planet.y); aim={x0:w.x,y0:w.y,x1:w.x,y1:w.y}; aiming=true; return; }
     down = {x:e.clientX, y:e.clientY, t:performance.now()};
     moved=false; holdActive=false;
     if(e.pointerType!=='mouse'){
@@ -954,6 +956,7 @@
   });
 
   canvas.addEventListener('pointerup', e=>{
+    if(gameOn){ if(aiming) launchBody(); aiming=false; aim=null; return; }
     if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; }
     const wasHold = holdActive;
     const small = down && Math.hypot(e.clientX-down.x, e.clientY-down.y) <= MOVE_TOL;
@@ -965,10 +968,12 @@
     holdActive=false; down=null;
   });
   canvas.addEventListener('pointercancel', ()=>{
+    if(gameOn){ aiming=false; aim=null; return; }
     if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}
     holdActive=false; down=null; setHover(null);
   });
   canvas.addEventListener('pointerleave', e=>{
+    if(gameOn){ aiming=false; aim=null; if(e.pointerType==='mouse') mouse.active=false; return; }
     if(e.pointerType==='mouse'){ setHover(null); mouse.active=false; }
   });
 
@@ -976,10 +981,31 @@
 
   window.addEventListener('keydown', e=>{
     if(e.key==='Escape'){
+      if(gameOn){ exitGame(); return; }
       if(moonPanel.classList.contains('show')) writeHash(focused?focused.slug:'');
       else if(aboutPanel.classList.contains('show')) writeHash('');
       else if(mode==='planet') writeHash('');
     }
+  });
+
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  const KONAMI = ['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright','b','a'];
+  let konamiIdx = 0;
+  window.addEventListener('keydown', e=>{
+    const k = e.key.toLowerCase();
+    if(k === KONAMI[konamiIdx]){
+      if(++konamiIdx === KONAMI.length){ konamiIdx = 0; gameOn ? exitGame() : enterGame(); }
+    } else {
+      konamiIdx = (k === KONAMI[0]) ? 1 : 0;
+    }
+  });
+
+  // friendlier secret: just type "comet"
+  let typed = '';
+  window.addEventListener('keydown', e=>{
+    if(e.key.length !== 1) return;
+    typed = (typed + e.key.toLowerCase()).slice(-5);
+    if(typed === 'comet'){ typed = ''; gameOn ? exitGame() : enterGame(); }
   });
 
   /* boot ur boot */
@@ -991,6 +1017,7 @@
     view.cx=0; view.cy=0; target.cx=0; target.cy=0;
     update(0);
     applyHashState();
+    try { window.focus(); } catch(_){}   // so key presses reach the page right away
     lastT = performance.now();
     requestAnimationFrame(frame);
   }
