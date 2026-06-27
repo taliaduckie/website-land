@@ -682,6 +682,28 @@
       ctx.strokeStyle = 'rgba(255,250,236,0.4)'; ctx.lineWidth = 1.2/view.scale;
       ctx.beginPath(); ctx.moveTo(aim.x0,aim.y0); ctx.lineTo(aim.x1,aim.y1); ctx.stroke();
       ctx.setLineDash([]);
+
+      // first-pull teaching cue: a small arrow + tag pointing the launch way
+      const dx = aim.x0-aim.x1, dy = aim.y0-aim.y1, len = Math.hypot(dx,dy);
+      if(firstPull && len*view.scale > 6){
+        const ux=dx/len, uy=dy/len, s=34/view.scale, hw=7/view.scale, px=-uy, py=ux;
+        const tx=aim.x0+ux*s, ty=aim.y0+uy*s;
+        ctx.strokeStyle='rgba(255,250,236,0.75)'; ctx.lineWidth=1.4/view.scale;
+        ctx.beginPath();
+        ctx.moveTo(aim.x0,aim.y0); ctx.lineTo(tx,ty);
+        ctx.moveTo(tx,ty); ctx.lineTo(tx-ux*hw+px*hw*0.6, ty-uy*hw+py*hw*0.6);
+        ctx.moveTo(tx,ty); ctx.lineTo(tx-ux*hw-px*hw*0.6, ty-uy*hw-py*hw*0.6);
+        ctx.stroke();
+        const sp = toScreen(tx,ty,par.planet.x,par.planet.y);
+        ctx.save();
+        ctx.setTransform(DPR,0,0,DPR,0,0);
+        ctx.font='400 11px "IM Fell English", serif';
+        ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillStyle='rgba(255,250,236,0.7)';
+        ctx.fillText('launch', sp.x + 7, sp.y);
+        ctx.restore();
+      }
+
       // the comet waiting at the anchor
       ctx.beginPath(); ctx.arc(aim.x0,aim.y0, 3.2/view.scale, 0, Math.PI*2);
       ctx.fillStyle = 'rgba(255,250,238,0.95)'; ctx.fill();
