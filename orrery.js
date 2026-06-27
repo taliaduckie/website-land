@@ -650,7 +650,7 @@
   // konami unlocks a little gravity sandbox: drag to launch a comet
   function enterGame(){
     writeHash(''); gameOn = true; bodies.length = 0; aim = null; aiming = false;
-    hintEl.innerHTML = 'comet sandbox &nbsp;·&nbsp; drag to launch &nbsp;·&nbsp; esc to exit';
+    hintEl.innerHTML = 'comet sandbox &nbsp;·&nbsp; pull back &amp; release to launch &nbsp;·&nbsp; esc to exit';
     hintEl.style.opacity = '0.85';
   }
   function exitGame(){
@@ -676,12 +676,14 @@
       ctx.fillStyle = 'rgba(255,250,238,0.95)'; ctx.fill();
     }
     if(aim){
+      // the pull-back (elastic), dashed
       ctx.setLineDash([6/view.scale, 6/view.scale]);
-      ctx.strokeStyle = 'rgba(255,250,236,0.5)'; ctx.lineWidth = 1.2/view.scale;
+      ctx.strokeStyle = 'rgba(255,250,236,0.4)'; ctx.lineWidth = 1.2/view.scale;
       ctx.beginPath(); ctx.moveTo(aim.x0,aim.y0); ctx.lineTo(aim.x1,aim.y1); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.beginPath(); ctx.arc(aim.x0,aim.y0, 3/view.scale, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255,250,236,0.8)'; ctx.fill();
+      // the comet waiting at the anchor
+      ctx.beginPath(); ctx.arc(aim.x0,aim.y0, 3.2/view.scale, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,250,238,0.95)'; ctx.fill();
     }
   }
 
