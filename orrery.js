@@ -327,7 +327,7 @@
 
   // hidden comet sandbox (konami) — tune to taste
   const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
-  let gameOn=false, aiming=false, aim=null;
+  let gameOn=false, aiming=false, aim=null, firstPull=true;
   const bodies=[];
 
   function applyWorld(offx,offy){
