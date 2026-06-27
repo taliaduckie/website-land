@@ -15,6 +15,7 @@
   const aboutPanel = document.getElementById('aboutPanel');
   const backBtn = document.getElementById('backBtn');
   const hintEl = document.getElementById('hint');
+  const hintDefault = hintEl.innerHTML;
 
   const SHADOW = {r:34, g:28, b:25};
   function hexRgb(h){ h=h.replace('#',''); return {r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16)}; }
@@ -322,6 +323,13 @@
   const cometCanvas = document.getElementById('comet');
   const cctx = cometCanvas.getContext('2d');
 
+  let meteor = null, nextMeteorIn = 12 + Math.random()*22;   // ambient shooting stars
+
+  // hidden comet sandbox (konami) — tune to taste
+  const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
+  let gameOn=false, aiming=false, aim=null;
+  const bodies=[];
+
   function applyWorld(offx,offy){
     ctx.setTransform(DPR,0,0,DPR,0,0);
     ctx.translate(W/2+offx, H/2+offy);
@@ -502,6 +510,29 @@
     par.planet.x=pmx*PX_PLANET; par.planet.y=pmy*PX_PLANET;
 
     for(let i=trail.length-1;i>=0;i--){ trail[i].life *= 0.9; if(trail[i].life < 0.03) trail.splice(i,1); }
+
+    if(meteor){
+      meteor.x += meteor.vx*dt; meteor.y += meteor.vy*dt; meteor.life -= dt;
+      if(meteor.life<=0 || meteor.y>H+120 || meteor.x<-120 || meteor.x>W+120) meteor = null;
+    } else {
+      nextMeteorIn -= dt;
+      if(nextMeteorIn<=0){ spawnMeteor(); nextMeteorIn = 90 + Math.random()*120; }
+    }
+
+    if(gameOn){
+      const soft = 2500;
+      for(let bi=bodies.length-1; bi>=0; bi--){
+        const bd = bodies[bi];
+        let ax=0, ay=0, dx, dy, d2, inv;
+        dx=-bd.x; dy=-bd.y; d2=dx*dx+dy*dy+soft; inv=G*SUN_MASS/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv;
+        for(const p of PLANETS){ dx=p.wx-bd.x; dy=p.wy-bd.y; d2=dx*dx+dy*dy+soft; inv=G*(p.r*PLANET_MASS)/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv; }
+        bd.vx+=ax*dt; bd.vy+=ay*dt;
+        bd.x+=bd.vx*dt; bd.y+=bd.vy*dt;
+        bd.trail.push({x:bd.x,y:bd.y}); if(bd.trail.length>36) bd.trail.shift();
+        const r2 = bd.x*bd.x + bd.y*bd.y;
+        if(r2 < (SUN.r*0.9)*(SUN.r*0.9) || r2 > 4000*4000) bodies.splice(bi,1);
+      }
+    }
   }
 
   function render(){
@@ -511,6 +542,7 @@
     ctx.setTransform(DPR,0,0,DPR,0,0);
 
     drawConstellations();
+    if(meteor) drawMeteor();
 
     let prog = 0;
     if(focused){
@@ -545,6 +577,7 @@
     if(focused && prog>0.02){
       focused.moons.forEach(m=>{ drawBody(m.wx,m.wy,m.r,m.color,prog); });
     }
+    if(gameOn) drawSandbox();
 
     ctx.setTransform(DPR,0,0,DPR,0,0);
     drawLabels(prog, otherAlpha);
@@ -588,6 +621,66 @@
       g.addColorStop(1, 'rgba(255,250,236,0)');
       cctx.fillStyle = g;
       cctx.beginPath(); cctx.arc(t.x,t.y,rad,0,Math.PI*2); cctx.fill();
+    }
+  }
+
+  function spawnMeteor(){
+    const dir = Math.random()<0.5 ? 1 : -1;
+    const ang = Math.PI*0.18 + Math.random()*Math.PI*0.16;   // below horizontal
+    const speed = (W+H)*0.32;
+    meteor = {
+      x: W*(0.15+Math.random()*0.7), y: H*(Math.random()*0.3),
+      vx: dir*Math.cos(ang)*speed, vy: Math.sin(ang)*speed,
+      life: 1, len: 80+Math.random()*70
+    };
+  }
+  function drawMeteor(){
+    const sp = Math.hypot(meteor.vx,meteor.vy)||1;
+    const ux = meteor.vx/sp, uy = meteor.vy/sp;
+    const hx = meteor.x, hy = meteor.y, tx = hx-ux*meteor.len, ty = hy-uy*meteor.len;
+    const a = Math.max(0, Math.min(1, meteor.life))*0.7;
+    const g = ctx.createLinearGradient(hx,hy,tx,ty);
+    g.addColorStop(0, 'rgba(255,250,236,'+a+')');
+    g.addColorStop(1, 'rgba(255,250,236,0)');
+    ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(hx,hy); ctx.lineTo(tx,ty); ctx.stroke();
+    ctx.lineCap = 'butt';
+  }
+
+  // konami unlocks a little gravity sandbox: drag to launch a comet
+  function enterGame(){
+    writeHash(''); gameOn = true; bodies.length = 0; aim = null; aiming = false;
+    hintEl.innerHTML = 'comet sandbox &nbsp;·&nbsp; drag to launch &nbsp;·&nbsp; esc to exit';
+    hintEl.style.opacity = '0.85';
+  }
+  function exitGame(){
+    gameOn = false; bodies.length = 0; aim = null; aiming = false;
+    hintEl.innerHTML = hintDefault;
+    hintEl.style.opacity = (mode==='system') ? '0.7' : '0';
+  }
+  function launchBody(){
+    if(!aim) return;
+    bodies.push({ x:aim.x0, y:aim.y0, vx:(aim.x1-aim.x0)*LAUNCH, vy:(aim.y1-aim.y0)*LAUNCH, trail:[] });
+    if(bodies.length > 40) bodies.shift();
+  }
+  function drawSandbox(){
+    for(const bd of bodies){
+      const t = bd.trail;
+      for(let i=1;i<t.length;i++){
+        ctx.strokeStyle = 'rgba(255,248,232,'+((i/t.length)*0.5)+')';
+        ctx.lineWidth = 1.3/view.scale;
+        ctx.beginPath(); ctx.moveTo(t[i-1].x,t[i-1].y); ctx.lineTo(t[i].x,t[i].y); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(bd.x,bd.y, 3/view.scale, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,250,238,0.95)'; ctx.fill();
+    }
+    if(aim){
+      ctx.setLineDash([6/view.scale, 6/view.scale]);
+      ctx.strokeStyle = 'rgba(255,250,236,0.5)'; ctx.lineWidth = 1.2/view.scale;
+      ctx.beginPath(); ctx.moveTo(aim.x0,aim.y0); ctx.lineTo(aim.x1,aim.y1); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(aim.x0,aim.y0, 3/view.scale, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,250,236,0.8)'; ctx.fill();
     }
   }
 
@@ -832,6 +925,11 @@
   }
 
   canvas.addEventListener('pointermove', e=>{
+    if(gameOn){
+      if(e.pointerType==='mouse') onMouseMove(e.clientX, e.clientY);
+      if(aiming && aim){ const w=toWorld(e.clientX,e.clientY,par.planet.x,par.planet.y); aim.x1=w.x; aim.y1=w.y; }
+      return;
+    }
     if(e.pointerType==='mouse'){
       onMouseMove(e.clientX, e.clientY);
       setHover(hitTest(e.clientX, e.clientY));
