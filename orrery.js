@@ -649,7 +649,7 @@
 
   // konami unlocks a little gravity sandbox: drag to launch a comet
   function enterGame(){
-    writeHash(''); gameOn = true; bodies.length = 0; aim = null; aiming = false;
+    writeHash(''); gameOn = true; bodies.length = 0; aim = null; aiming = false; firstPull = true;
     hintEl.innerHTML = 'comet sandbox &nbsp;·&nbsp; pull back &amp; release to launch &nbsp;·&nbsp; esc to exit';
     hintEl.style.opacity = '0.85';
   }
