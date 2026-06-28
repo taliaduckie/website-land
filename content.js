@@ -36,9 +36,9 @@ const SITE = {
 
   // links in the persistent corner bar — edit hrefs to your real URLs
   social: [
-    { label: 'LinkedIn', href: '#' },
-    { label: 'Substack', href: '#' },
-    { label: 'GitHub',   href: '#' }
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/talia-b-honikman/' },
+    { label: 'Substack', href: 'https://taliahonikman.substack.com/' },
+    { label: 'GitHub',   href: 'https://github.com/taliaduckie' }
   ],
 
   // varied sizes (emphasis), orbits, eccentricities, periods (slow, all different)
