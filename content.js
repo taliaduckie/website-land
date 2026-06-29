@@ -27,8 +27,8 @@ const SITE = {
         "I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, and food. Human communication forms are inherently lossy; for me this is what makes them so fascinating!"
       ],
       links: [
-        { label: 'email',     href: '#' },
-        { label: 'cv',        href: '#' },
+        { label: 'email', href: 'mailto:tbhonikman@gmail.com' },
+        { label: 'cv',    href: '#' },
         { label: 'elsewhere', href: '#' }
       ]
     }
