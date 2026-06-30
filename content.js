@@ -28,7 +28,7 @@ const SITE = {
       ],
       links: [
         { label: 'email', href: 'mailto:tbhonikman@gmail.com' },
-        { label: 'cv',    href: '#' },
+        { label: 'cv',    href: 'Honikman-Talia-CV-2026.pdf' },
         { label: 'elsewhere', href: '#' }
       ]
     }
