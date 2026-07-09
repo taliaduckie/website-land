@@ -1,4 +1,4 @@
-Attempt @ an interactive orrery as a personal site. P basic anilla JS, single <canvas>. 
+Attempt @ an interactive orrery as a personal site. P basic setup - vanilla JS, single <canvas>. 
 
 Concept
 
