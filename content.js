@@ -56,7 +56,7 @@ const SITE = {
     },
     {
       name: 'AI thoughts',
-      desc: 'humanities-oriented AI thoughts',
+      desc: 'humanities/linguistics oriented AI thoughts',
       color: '#5d7a44', r: 31, a: 262, e: 0.13, period: 108, rot: 1.15, // largest — strong emphasis
       pattern: 'glass',   // subtle blown-glass surface
       ring: { inner: 1.62, outer: 1.9, tilt: 0.28, angle: 0.5, color: '#a8b196', alpha: 0.36 },
