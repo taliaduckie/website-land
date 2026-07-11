@@ -219,6 +219,34 @@
       edges:[[0,1],[1,2],[2,3],[3,0],[3,4]]
     }
   ];
+  // name + member stars per constellation, same order as CONSTELLATIONS
+  const CONST_INFO = [
+    { name:'Orion',          stars:['Betelgeuse','Bellatrix','Alnitak','Alnilam','Mintaka','Saiph','Rigel'] },
+    { name:'Ursa Major',     stars:['Dubhe','Merak','Phecda','Megrez','Alioth','Mizar','Alkaid'] },
+    { name:'Cassiopeia',     stars:['Caph','Schedar','Cih','Ruchbah','Segin'] },
+    { name:'Cygnus',         stars:['Deneb','Sadr','Albireo','Gienah','Fawaris'] },
+    { name:'Lyra',           stars:['Vega','Sheliak','Sulafat','Aladfar','Zeta Lyrae'] },
+    { name:'Scorpius',       stars:['Dschubba','Acrab','Fang','Antares','Alniyat','Larawag','Sargas','Shaula'] },
+    { name:'Leo',            stars:['Regulus','Denebola','Algieba','Zosma','Chertan','Adhafera','Rasalas','Algenubi'] },
+    { name:'Gemini',         stars:['Castor','Pollux','Alhena','Wasat','Mebsuta','Mekbuda','Tejat','Propus'] },
+    { name:'Taurus',         stars:['Aldebaran','Elnath','Ain','Chamukuy','Prima Hyadum','Secunda Hyadum','Tianguan'] },
+    { name:'Pegasus',        stars:['Markab','Scheat','Algenib','Enif','Alpheratz','Matar'] },
+    { name:'Boötes',         stars:['Arcturus','Izar','Muphrid','Seginus','Nekkar','Rho Boötis'] },
+    { name:'Crux',           stars:['Acrux','Mimosa','Gacrux','Imai'] },
+    { name:'Ursa Minor',     stars:['Polaris','Yildun','Epsilon UMi','Zeta UMi','Pherkad','Kochab','Anwar al Farkadain'] },
+    { name:'Draco',          stars:['Thuban','Eltanin','Rastaban','Altais','Aldhibah','Edasich','Grumium','Tyl','Giausar','Athebyne','Dziban'] },
+    { name:'Cepheus',        stars:['Alderamin','Alfirk','Errai','Kurhah','Zeta Cephei'] },
+    { name:'Perseus',        stars:['Mirfak','Algol','Atik','Menkib','Miram','Gorgonea Tertia','Misam'] },
+    { name:'Auriga',         stars:['Capella','Menkalinan','Mahasim','Hassaleh','Almaaz'] },
+    { name:'Sagittarius',    stars:['Alnasl','Kaus Media','Kaus Australis','Kaus Borealis','Nunki','Ascella','Nash','Albaldah'] },
+    { name:'Canis Major',    stars:['Sirius','Mirzam','Muliphein','Wezen','Adhara','Aludra','Furud'] },
+    { name:'Corona Borealis',stars:['Alphecca','Nusakan','Theta CrB','Gamma CrB','Delta CrB','Epsilon CrB','Iota CrB'] },
+    { name:'Hercules',       stars:['Kornephoros','Rasalgethi','Sarin','Maasym','Zeta Herculis','Pi Herculis','Eta Herculis','Mu Herculis'] },
+    { name:'Aquarius',       stars:['Sadalsuud','Sadalmelik','Skat','Albali','Sadachbia','Ancha','Hydor'] },
+    { name:'Delphinus',      stars:['Rotanev','Sualocin','Deneb Dulfim','Delta Delphini','Aldulfin'] },
+    { name:'Aquila',         stars:['Altair','Tarazed','Alshain','Okab','Deneb el Okab','Al Thalimain','Bezek'] },
+    { name:'Corvus',         stars:['Alchiba','Kraz','Gienah Corvi','Algorab','Minkar'] }
+  ];
 
   function buildBackground(){
     if(!W || !H) return;
@@ -274,14 +302,15 @@
     if(!constPlaced) placeConstellations();
     constItems = [];
     const minDim = Math.min(W,H);
-    CONSTELLATIONS.forEach(c=>{
+    CONSTELLATIONS.forEach((c,i)=>{
       const size = c.scale*minDim, ax = c.ax*W, ay = c.ay*H;
       const cos = Math.cos(c.rot||0), sin = Math.sin(c.rot||0);
       const pts = c.stars.map(([lx,ly])=>{
         const dx = lx-0.5, dy = ly-0.5;
         return { bx: ax + (dx*cos - dy*sin)*size, by: ay + (dx*sin + dy*cos)*size, op: 0.16 };
       });
-      constItems.push({ pts, edges: c.edges });
+      const info = CONST_INFO[i] || {};
+      constItems.push({ pts, edges: c.edges, name: info.name || '', starNames: info.stars || [] });
     });
   }
 
@@ -329,6 +358,10 @@
   const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
   let gameOn=false, aiming=false, aim=null, firstPull=true;
   const bodies=[];
+
+  // hover-a-constellation-long-enough → list its stars
+  const CONST_HOVER_R = 70, CONST_DWELL = 0.6;   // px radius, seconds
+  let constHover = null, constDwell = 0, constShown = false;
 
   function applyWorld(offx,offy){
     ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -532,6 +565,25 @@
         const r2 = bd.x*bd.x + bd.y*bd.y;
         if(r2 < (SUN.r*0.9)*(SUN.r*0.9) || r2 > 4000*4000) bodies.splice(bi,1);
       }
+    }
+
+    // dwell on a constellation (when nothing else is hovered) to reveal its stars
+    if(!gameOn && mouse.active && !hoverObj){
+      let best=null, bestD=CONST_HOVER_R;
+      for(const item of constItems){
+        for(const p of item.pts){
+          const d = Math.hypot((p.bx+par.bg.x)-mouse.x, (p.by+par.bg.y)-mouse.y);
+          if(d < bestD){ bestD = d; best = item; }
+        }
+      }
+      if(best === constHover){ if(best) constDwell += dt; }
+      else { if(constShown){ hideTip(); constShown=false; } constHover = best; constDwell = 0; }
+      if(constHover && !constShown && constDwell >= CONST_DWELL){ showConstTip(constHover); constShown = true; }
+      if(!constHover && constShown){ hideTip(); constShown = false; }
+      if(constShown) positionConstTip(constHover);
+    } else {
+      if(constShown){ if(!hoverObj) hideTip(); constShown = false; }
+      constHover = null; constDwell = 0;
     }
   }
 
@@ -784,6 +836,19 @@
     tipEl.classList.add('show');
   }
   function hideTip(){ tipEl.classList.remove('show'); }
+  function showConstTip(item){
+    tipName.textContent = item.name;
+    tipDesc.textContent = item.starNames.join(' · ');
+    tipDesc.style.display = '';
+    tipEl.classList.add('show');
+    positionConstTip(item);
+  }
+  function positionConstTip(item){
+    let minY=Infinity, sumX=0;
+    for(const p of item.pts){ sumX += p.bx; if(p.by<minY) minY=p.by; }
+    tipEl.style.left = (sumX/item.pts.length + par.bg.x) + 'px';
+    tipEl.style.top  = (minY + par.bg.y - 12) + 'px';
+  }
   function positionTip(){
     if(!hoverObj) return;
     const o = hoverObj.obj;
