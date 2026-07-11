@@ -846,8 +846,14 @@
   function positionConstTip(item){
     let minY=Infinity, sumX=0;
     for(const p of item.pts){ sumX += p.bx; if(p.by<minY) minY=p.by; }
-    tipEl.style.left = (sumX/item.pts.length + par.bg.x) + 'px';
-    tipEl.style.top  = (minY + par.bg.y - 12) + 'px';
+    let cx = sumX/item.pts.length + par.bg.x;
+    let ty = minY + par.bg.y - 12;
+    // clamp within the viewport (tip is centered on cx and sits above ty)
+    const w = tipEl.offsetWidth, h = tipEl.offsetHeight, m = 10;
+    cx = Math.max(m + w/2, Math.min(W - m - w/2, cx));
+    ty = Math.max(m + h,   Math.min(H - m,       ty));
+    tipEl.style.left = cx + 'px';
+    tipEl.style.top  = ty + 'px';
   }
   function positionTip(){
     if(!hoverObj) return;
