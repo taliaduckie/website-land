@@ -61,7 +61,7 @@ const SITE = {
       pattern: 'glass',   // subtle blown-glass surface
       ring: { inner: 1.62, outer: 1.9, tilt: 0.28, angle: 0.5, color: '#a8b196', alpha: 0.36 },
       moons: [
-        { name: 'fine, i’ll be aligned',                 dr: 52,  period: 19, e: 0.05, rot: 1.0, href: '#', body: 'Placeholder: an article. (link coming)' },
+        { name: 'fine, i’ll be aligned',                 dr: 52,  period: 19, e: 0.05, rot: 1.0, href: 'https://taliahonikman.substack.com/p/fine-ill-be-aligned', body: 'what “alignment faking” borrows from someone saying “fine” when they’re not' },
         { name: '“hallucination” is the wrong metaphor', dr: 78,  period: 28, e: 0.14, rot: 3.0, href: '#', body: 'Placeholder: why “hallucination” is the wrong metaphor.' },
         { name: 'sycophancy mapping',                    dr: 100, period: 37, e: 0.09, rot: 5.1, href: '#', body: 'Placeholder: mapping sycophancy in model responses.' }
       ]
