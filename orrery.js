@@ -257,7 +257,13 @@
     { name:'Aquarius',       stars:['Sadalsuud','Sadalmelik','Skat','Albali','Sadachbia','Ancha','Hydor'] },
     { name:'Delphinus',      stars:['Rotanev','Sualocin','Deneb Dulfim','Delta Delphini','Aldulfin'] },
     { name:'Aquila',         stars:['Altair','Tarazed','Alshain','Okab','Deneb el Okab','Al Thalimain','Bezek'] },
-    { name:'Corvus',         stars:['Alchiba','Kraz','Gienah Corvi','Algorab','Minkar'] }
+    { name:'Corvus',         stars:['Alchiba','Kraz','Gienah Corvi','Algorab','Minkar'] },
+    { name:'Andromeda',      stars:['Alpheratz','Delta Andromedae','Mirach','Mu Andromedae','Almach','Nu Andromedae'] },
+    { name:'Ophiuchus',      stars:['Rasalhague','Cebalrai','Sabik','Theta Ophiuchi','Yed Prior','Yed Posterior','Han'] },
+    { name:'Triangulum',     stars:['Mothallah','Beta Trianguli','Gamma Trianguli'] },
+    { name:'Sagitta',        stars:['Sham','Beta Sagittae','Gamma Sagittae','Delta Sagittae'] },
+    { name:'Lacerta',        stars:['Alpha Lacertae','4 Lacertae','Beta Lacertae','5 Lacertae','2 Lacertae'] },
+    { name:'Canis Minor',    stars:['Procyon','Gomeisa'] }
   ];
 
   function buildBackground(){
