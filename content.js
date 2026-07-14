@@ -49,7 +49,7 @@ const SITE = {
       pattern: 'glass',   // subtle blown-glass surface
 
       moons: [
-        { name: 'negation taxonomy',    dr: 50, period: 17, e: 0.06, rot: 0.4, href: '#', body: 'Placeholder: a taxonomy of negation and what each kind implies.' },
+        { name: 'negation taxonomy',    dr: 50, period: 17, e: 0.06, rot: 0.4, href: 'https://docs.google.com/document/d/1bIu_TZ74EtzlIcLg9-SXu6GmK8S7GPPsve7MUjhKLeY/preview', body: 'Placeholder: a taxonomy of negation and what each kind implies.' },
         { name: 'gricean classifier',   dr: 74, period: 25, e: 0.12, rot: 2.1, href: '#', body: 'Placeholder: classifying utterances by Gricean maxim.' },
         { name: 'irony and projection', dr: 96, period: 34, e: 0.08, rot: 4.0, href: '#', body: 'Placeholder: irony and what it projects onto the common ground.' }
       ]
