@@ -905,6 +905,7 @@
     mTitle.textContent = m.name;
     mBody.textContent = m.body;
     mLink.href = m.href || '#';
+    mLink.target = '_blank'; mLink.rel = 'noopener';   // open outbound links in a new tab
     moonPanel.classList.add('show');
     // place near moon, clamped to view
     const s = toScreen(m.wx,m.wy);
