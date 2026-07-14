@@ -123,16 +123,6 @@
       stars:[[0.12,0.10],[0.26,0.20],[0.40,0.30],[0.47,0.46],[0.52,0.62],[0.62,0.74],[0.74,0.77],[0.82,0.66]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]
     },
-    { // Leo
-      ax:0.08, ay:0.49, scale:0.17, rot:-0.04,
-      stars:[[0.18,0.72],[0.20,0.52],[0.27,0.36],[0.40,0.30],[0.47,0.42],[0.40,0.55],[0.64,0.58],[0.88,0.66]],
-      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[5,6],[6,7],[7,0]]
-    },
-    { // Gemini
-      ax:0.93, ay:0.53, scale:0.16, rot:0.05,
-      stars:[[0.30,0.10],[0.55,0.12],[0.34,0.35],[0.58,0.35],[0.30,0.62],[0.52,0.60],[0.24,0.85],[0.62,0.82]],
-      edges:[[0,2],[2,4],[4,6],[1,3],[3,5],[5,7],[2,3],[4,5]]
-    },
     { // Taurus
       ax:0.29, ay:0.09, scale:0.15, rot:0.0,
       stars:[[0.50,0.55],[0.40,0.48],[0.30,0.38],[0.18,0.20],[0.58,0.48],[0.70,0.38],[0.85,0.22]],
@@ -178,11 +168,6 @@
       stars:[[0.50,0.08],[0.78,0.35],[0.66,0.75],[0.30,0.78],[0.20,0.38]],
       edges:[[0,1],[1,2],[2,3],[3,4],[4,0]]
     },
-    { // Sagittarius (teapot)
-      ax:0.30, ay:0.87, scale:0.16, rot:0.02,
-      stars:[[0.20,0.40],[0.35,0.30],[0.45,0.45],[0.30,0.55],[0.55,0.35],[0.60,0.55],[0.45,0.60],[0.70,0.25]],
-      edges:[[0,1],[1,2],[2,3],[3,0],[1,4],[4,5],[5,2],[5,6],[4,7]]
-    },
     { // Canis Major
       ax:0.11, ay:0.90, scale:0.13, rot:-0.04,
       stars:[[0.40,0.30],[0.55,0.45],[0.45,0.60],[0.30,0.55],[0.65,0.70],[0.50,0.80],[0.70,0.40]],
@@ -217,6 +202,36 @@
       ax:0.71, ay:0.71, scale:0.10, rot:-0.04,
       stars:[[0.30,0.20],[0.65,0.25],[0.72,0.65],[0.38,0.70],[0.20,0.45]],
       edges:[[0,1],[1,2],[2,3],[3,0],[3,4]]
+    },
+    { // Andromeda
+      ax:0.40, ay:0.20, scale:0.16, rot:0.03,
+      stars:[[0.08,0.55],[0.30,0.50],[0.52,0.45],[0.72,0.38],[0.90,0.28],[0.60,0.65]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[2,5]]
+    },
+    { // Ophiuchus
+      ax:0.55, ay:0.55, scale:0.16, rot:0.0,
+      stars:[[0.50,0.08],[0.68,0.30],[0.60,0.60],[0.40,0.70],[0.22,0.55],[0.20,0.30],[0.35,0.40]],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[4,6]]
+    },
+    { // Triangulum
+      ax:0.60, ay:0.30, scale:0.09, rot:0.0,
+      stars:[[0.20,0.70],[0.80,0.60],[0.50,0.20]],
+      edges:[[0,1],[1,2],[2,0]]
+    },
+    { // Sagitta (the arrow)
+      ax:0.45, ay:0.45, scale:0.07, rot:0.0,
+      stars:[[0.10,0.55],[0.45,0.48],[0.80,0.40],[0.62,0.62]],
+      edges:[[0,1],[1,2],[1,3]]
+    },
+    { // Lacerta
+      ax:0.35, ay:0.62, scale:0.11, rot:0.0,
+      stars:[[0.10,0.30],[0.30,0.60],[0.48,0.35],[0.66,0.62],[0.86,0.35]],
+      edges:[[0,1],[1,2],[2,3],[3,4]]
+    },
+    { // Canis Minor
+      ax:0.20, ay:0.40, scale:0.07, rot:0.0,
+      stars:[[0.30,0.65],[0.70,0.35]],
+      edges:[[0,1]]
     }
   ];
   // name + member stars per constellation, same order as CONSTELLATIONS
@@ -227,8 +242,6 @@
     { name:'Cygnus',         stars:['Deneb','Sadr','Albireo','Gienah','Fawaris'] },
     { name:'Lyra',           stars:['Vega','Sheliak','Sulafat','Aladfar','Zeta Lyrae'] },
     { name:'Scorpius',       stars:['Dschubba','Acrab','Fang','Antares','Alniyat','Larawag','Sargas','Shaula'] },
-    { name:'Leo',            stars:['Regulus','Denebola','Algieba','Zosma','Chertan','Adhafera','Rasalas','Algenubi'] },
-    { name:'Gemini',         stars:['Castor','Pollux','Alhena','Wasat','Mebsuta','Mekbuda','Tejat','Propus'] },
     { name:'Taurus',         stars:['Aldebaran','Elnath','Ain','Chamukuy','Prima Hyadum','Secunda Hyadum','Tianguan'] },
     { name:'Pegasus',        stars:['Markab','Scheat','Algenib','Enif','Alpheratz','Matar'] },
     { name:'Boötes',         stars:['Arcturus','Izar','Muphrid','Seginus','Nekkar','Rho Boötis'] },
@@ -238,7 +251,6 @@
     { name:'Cepheus',        stars:['Alderamin','Alfirk','Errai','Kurhah','Zeta Cephei'] },
     { name:'Perseus',        stars:['Mirfak','Algol','Atik','Menkib','Miram','Gorgonea Tertia','Misam'] },
     { name:'Auriga',         stars:['Capella','Menkalinan','Mahasim','Hassaleh','Almaaz'] },
-    { name:'Sagittarius',    stars:['Alnasl','Kaus Media','Kaus Australis','Kaus Borealis','Nunki','Ascella','Nash','Albaldah'] },
     { name:'Canis Major',    stars:['Sirius','Mirzam','Muliphein','Wezen','Adhara','Aludra','Furud'] },
     { name:'Corona Borealis',stars:['Alphecca','Nusakan','Theta CrB','Gamma CrB','Delta CrB','Epsilon CrB','Iota CrB'] },
     { name:'Hercules',       stars:['Kornephoros','Rasalgethi','Sarin','Maasym','Zeta Herculis','Pi Herculis','Eta Herculis','Mu Herculis'] },
