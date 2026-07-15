@@ -49,8 +49,8 @@ const SITE = {
       pattern: 'glass',   // blown-glass y surface
 
       moons: [
-        { name: 'negation taxonomy',    dr: 50, period: 17, e: 0.06, rot: 0.4, href: 'https://docs.google.com/document/d/1bIu_TZ74EtzlIcLg9-SXu6GmK8S7GPPsve7MUjhKLeY/preview', body: 'ghosting outranks gaslighting; honesty and politeness are orthogonal' },
-        { name: 'gricean classifier',   dr: 74, period: 25, e: 0.12, rot: 2.1, href: 'https://github.com/taliaduckie/grice-maxim-classifier', body: 'roberta-base fine-tuned to classify utterances by which gricean maxim they violate (quality, quantity, relevance, manner)' },
+        { name: 'negation taxonomy',    dr: 50, period: 17, e: 0.06, rot: 0.4, href: 'https://docs.google.com/document/d/1bIu_TZ74EtzlIcLg9-SXu6GmK8S7GPPsve7MUjhKLeY/preview', body: 'Ghosting outranks gaslighting; honesty and politeness are orthogonal.' },
+        { name: 'gricean classifier',   dr: 74, period: 25, e: 0.12, rot: 2.1, href: 'https://github.com/taliaduckie/grice-maxim-classifier', body: 'A roberta-base model fine-tuned to classify utterances by which Gricean maxim they violate (quality, quantity, relevance, manner).' },
         { name: 'irony and projection', dr: 96, period: 34, e: 0.08, rot: 4.0, href: '#', body: 'Some of my undergraduate work focused on irony and presupposition projection: how ironic speech deliberately violates cooperative norms to communicate more than what’s said, and how certain presupposed content survives embedding under negation and conditionals irrespective of context.' }
       ]
     },
@@ -61,9 +61,9 @@ const SITE = {
       pattern: 'glass',   // also blown-glass y surface
       ring: { inner: 1.62, outer: 1.9, tilt: 0.28, angle: 0.5, color: '#a8b196', alpha: 0.36 },
       moons: [
-        { name: 'fine, i’ll be aligned',                 dr: 52,  period: 19, e: 0.05, rot: 1.0, href: 'https://taliahonikman.substack.com/p/fine-ill-be-aligned', body: 'what “alignment faking” borrows from someone saying “fine” when they’re not' },
+        { name: 'fine, i’ll be aligned',                 dr: 52,  period: 19, e: 0.05, rot: 1.0, href: 'https://taliahonikman.substack.com/p/fine-ill-be-aligned', body: 'What “alignment faking” borrows from someone saying “fine” when they’re not.' },
         { name: '“hallucination” is the wrong metaphor', dr: 78,  period: 28, e: 0.14, rot: 3.0, href: '#', body: 'Placeholder: why “hallucination” is the wrong metaphor.' },
-        { name: 'sycophancy mapping',                    dr: 100, period: 37, e: 0.09, rot: 5.1, href: '#', body: 'in progress: sycophancy mapping in language models. how a discourse classifier’s blind spots (moments that it can’t tell genuine agreement from people-pleasing) reveal something about the mechanisms of AI-related adulation' }
+        { name: 'sycophancy mapping',                    dr: 100, period: 37, e: 0.09, rot: 5.1, href: '#', body: 'In progress: sycophancy mapping in language models. How a discourse classifier’s blind spots (moments that it can’t tell genuine agreement from people-pleasing) reveal something about the mechanisms of AI-related adulation.' }
       ]
     },
     {
@@ -71,7 +71,7 @@ const SITE = {
       desc: 'rankings, sortings, meltings, testings...',
       color: '#b06a2c', r: 21, a: 348, e: 0.06, period: 152, rot: 2.05,
       moons: [
-        { name: 'pasta mechanics',        dr: 48, period: 16, e: 0.07, rot: 0.7, href: 'https://docs.google.com/document/d/1883SsckLPuwK758Ua7wjFAL5EVV2zCs7iVY_ZU4UrT4/preview', body: 'in progress: pasta alla gricia fluid mechanics experiment' },
+        { name: 'pasta mechanics',        dr: 48, period: 16, e: 0.07, rot: 0.7, href: 'https://docs.google.com/document/d/1883SsckLPuwK758Ua7wjFAL5EVV2zCs7iVY_ZU4UrT4/preview', body: 'In progress: pasta alla gricia fluid mechanics experiment.' },
         { name: 'maillard explorations',  dr: 72, period: 26, e: 0.10, rot: 2.6, href: '#', body: 'Placeholder: explorations in browning and flavor.' },
         { name: 'absurd baking projects', dr: 94, period: 34, e: 0.08, rot: 4.6, href: '#', body: 'Placeholder: baking projects that got out of hand.' }
       ]
