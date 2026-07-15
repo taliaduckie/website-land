@@ -294,6 +294,8 @@
   }
   function placeConstellations(){
     const minDim = Math.min(W,H), pad = 10;
+    const cx = W/2, cy = H/2;
+    const keepOut = systemExtent*fitScale + 14;   // the orrery's reach on screen — stay off it
     const order = CONSTELLATIONS.map(c=>({ c, r: constLocalRadius(c)*minDim }))
                                 .sort((a,b)=> b.r - a.r);   // biggest first
     const done = [];
@@ -301,17 +303,17 @@
       const r = it.r;
       const minX=r+pad, maxX=Math.max(r+pad, W-r-pad);
       const minY=r+pad, maxY=Math.max(r+pad, H-r-pad);
-      let bx=W*0.5, by=H*0.5;
-      for(let a=0;a<500;a++){
-        const relax = a>300 ? 0.55 : 1;   // loosen if it gets hard to fit
+      let bx=0, by=0, ok=false;
+      for(let a=0;a<1200;a++){
         const x = minX + Math.random()*(maxX-minX);
         const y = minY + Math.random()*(maxY-minY);
+        if(Math.hypot(x-cx, y-cy) < keepOut + r) continue;   // would sit over the orrery
         let good = true;
-        for(const p of done){ if(Math.hypot(x-p.x,y-p.y) < (r+p.r)*relax + pad){ good=false; break; } }
-        if(good){ bx=x; by=y; break; }
+        for(const p of done){ if(Math.hypot(x-p.x,y-p.y) < r+p.r+pad){ good=false; break; } }
+        if(good){ bx=x; by=y; ok=true; break; }
       }
-      done.push({ x:bx, y:by, r });
-      it.c.ax = bx/W; it.c.ay = by/H;
+      it.c.placed = ok;   // no room out here? leave it out of the sky entirely
+      if(ok){ done.push({ x:bx, y:by, r }); it.c.ax = bx/W; it.c.ay = by/H; }
     }
     constPlaced = true;
   }
@@ -321,6 +323,7 @@
     constItems = [];
     const minDim = Math.min(W,H);
     CONSTELLATIONS.forEach((c,i)=>{
+      if(!c.placed) return;
       const size = c.scale*minDim, ax = c.ax*W, ay = c.ay*H;
       const cos = Math.cos(c.rot||0), sin = Math.sin(c.rot||0);
       const pts = c.stars.map(([lx,ly])=>{
@@ -586,7 +589,7 @@
     }
 
     // dwell on a constellation (when nothing else is hovered) to reveal its stars
-    if(!gameOn && mouse.active && !hoverObj){
+    if(!gameOn && mouse.active && !hoverObj && !nearInteractive()){
       let best=null, bestD=CONST_HOVER_R;
       for(const item of constItems){
         for(const p of item.pts){
@@ -792,27 +795,15 @@
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
     }
 
-    // only the hovered (paused) or focused planet
+    // planet name only as the "you are here" heading when focused (hover uses the tooltip)
     PLANETS.forEach(p=>{
-      const hovered = hoverObj && hoverObj.obj===p;
-      let a = 0;
-      if(p===focused) a = prog;
-      else if(hovered) a = otherAlpha;
+      const a = (p===focused) ? prog : 0;
       if(a<=0.03) return;
       const s = toScreen(p.wx,p.wy,par.planet.x,par.planet.y);
       ctx.font = '700 ' + Math.round(15 + p.r*0.10) + 'px "IM Fell English", serif';
       ctx.fillStyle = rgba(hexRgb('#f6f3ee'), a);
       ctx.fillText(p.name, s.x, s.y + p.r*view.scale + 10);
     });
-
-    // only the hovered moon
-    if(focused && prog>0.25 && hoverObj && hoverObj.type==='moon'){
-      const m = hoverObj.obj;
-      const s = toScreen(m.wx,m.wy,par.planet.x,par.planet.y);
-      ctx.font = '700 13px "IM Fell English", serif';
-      ctx.fillStyle = rgba(hexRgb('#ece6dc'), prog);
-      ctx.fillText(m.name, s.x, s.y + m.r*view.scale + 8);
-    }
   }
 
   function frame(now){
@@ -848,14 +839,37 @@
   }
 
   function showTip(obj){
-    tipName.textContent = obj.name || obj.label || '';
+    const isSun = obj===SUN;   // the sun's name already sits under it permanently
+    tipName.textContent = isSun ? '' : (obj.name || obj.label || '');
+    tipName.style.display = isSun ? 'none' : '';
     tipDesc.textContent = obj.desc || '';
     tipDesc.style.display = obj.desc ? '' : 'none';
     tipEl.classList.add('show');
   }
   function hideTip(){ tipEl.classList.remove('show'); }
+  // a body under/near the cursor wins over the constellation dwell (planets orbit, so
+  // hoverObj can go stale between pointermoves and a constellation would sneak through)
+  function nearInteractive(){
+    const pad = 26;
+    if(focused){
+      let s = toScreen(focused.wx, focused.wy, par.planet.x, par.planet.y);
+      if(Math.hypot(mouse.x-s.x, mouse.y-s.y) < focused.r*view.scale + pad) return true;
+      for(const m of focused.moons){
+        s = toScreen(m.wx, m.wy, par.planet.x, par.planet.y);
+        if(Math.hypot(mouse.x-s.x, mouse.y-s.y) < Math.max(m.r*view.scale, 10) + pad) return true;
+      }
+      return false;
+    }
+    for(const p of PLANETS){
+      const s = toScreen(p.wx, p.wy, par.planet.x, par.planet.y);
+      if(Math.hypot(mouse.x-s.x, mouse.y-s.y) < p.r*view.scale + pad) return true;
+    }
+    const ss = toScreen(0,0, par.sun.x, par.sun.y);
+    return Math.hypot(mouse.x-ss.x, mouse.y-ss.y) < SUN.r*view.scale + pad;
+  }
   function showConstTip(item){
     tipName.textContent = item.name;
+    tipName.style.display = '';
     tipDesc.textContent = item.starNames.join(' · ');
     tipDesc.style.display = '';
     tipEl.classList.add('show');

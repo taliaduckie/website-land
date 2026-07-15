@@ -17,7 +17,7 @@
 const SITE = {
   sun: {
     label: 'Talia Honikman',   // <- shown under the sun
-    desc:  'click to read more.',
+    desc:  'click to read more',
     color: '#c47a2f',
     r: 46,
     about: {
@@ -33,20 +33,20 @@ const SITE = {
     }
   },
 
-  // links in the persistent corner bar — edit hrefs to your real URLs
+  // links in the persistent corner bar 
   social: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/talia-b-honikman/' },
     { label: 'Substack', href: 'https://taliahonikman.substack.com/' },
     { label: 'GitHub',   href: 'https://github.com/taliaduckie' }
   ],
 
-  // varied sizes (emphasis), orbits, eccentricities, periods (slow, all different)
+  // varied sizes (emphasis?), orbits, eccentricities, periods (slow, all different)
   planets: [
     {
       name: 'pragmatics stuff',
       desc: 'literal meaning ⊂ actual meaning',
       color: '#9b3d34', r: 27, a: 520, e: 0.10, period: 232, rot: 3.45,
-      pattern: 'glass',   // subtle blown-glass surface
+      pattern: 'glass',   // blown-glass y surface
 
       moons: [
         { name: 'negation taxonomy',    dr: 50, period: 17, e: 0.06, rot: 0.4, href: 'https://docs.google.com/document/d/1bIu_TZ74EtzlIcLg9-SXu6GmK8S7GPPsve7MUjhKLeY/preview', body: 'ghosting outranks gaslighting; honesty and politeness are orthogonal' },
@@ -58,7 +58,7 @@ const SITE = {
       name: 'AI thoughts',
       desc: 'humanities/linguistics oriented AI thoughts',
       color: '#5d7a44', r: 31, a: 262, e: 0.13, period: 108, rot: 1.15, // largest — strong emphasis
-      pattern: 'glass',   // subtle blown-glass surface
+      pattern: 'glass',   // also blown-glass y surface
       ring: { inner: 1.62, outer: 1.9, tilt: 0.28, angle: 0.5, color: '#a8b196', alpha: 0.36 },
       moons: [
         { name: 'fine, i’ll be aligned',                 dr: 52,  period: 19, e: 0.05, rot: 1.0, href: 'https://taliahonikman.substack.com/p/fine-ill-be-aligned', body: 'what “alignment faking” borrows from someone saying “fine” when they’re not' },
@@ -71,7 +71,7 @@ const SITE = {
       desc: 'rankings, sortings, meltings, testings...',
       color: '#b06a2c', r: 21, a: 348, e: 0.06, period: 152, rot: 2.05,
       moons: [
-        { name: 'pasta mechanics',        dr: 48, period: 16, e: 0.07, rot: 0.7, href: '#', body: 'Placeholder: the mechanics of pasta — shape, bite, and structure.' },
+        { name: 'pasta mechanics',        dr: 48, period: 16, e: 0.07, rot: 0.7, href: 'https://docs.google.com/document/d/1883SsckLPuwK758Ua7wjFAL5EVV2zCs7iVY_ZU4UrT4/preview', body: 'in progress: pasta alla gricia fluid mechanics experiment' },
         { name: 'maillard explorations',  dr: 72, period: 26, e: 0.10, rot: 2.6, href: '#', body: 'Placeholder: explorations in browning and flavor.' },
         { name: 'absurd baking projects', dr: 94, period: 34, e: 0.08, rot: 4.6, href: '#', body: 'Placeholder: baking projects that got out of hand.' }
       ]
