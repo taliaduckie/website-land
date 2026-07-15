@@ -936,7 +936,9 @@
     mDomain.textContent = parent.name;
     mTitle.textContent = m.name;
     mBody.textContent = m.body;
-    mLink.href = m.href || '#';
+    const hasLink = m.href && m.href !== '#';          // text-only moons show no dead "open →"
+    mLink.style.display = hasLink ? '' : 'none';
+    mLink.href = hasLink ? m.href : '#';
     mLink.target = '_blank'; mLink.rel = 'noopener';   // open outbound links in a new tab
     moonPanel.classList.add('show');
     // place near moon, clamped to view
