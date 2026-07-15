@@ -51,7 +51,7 @@ const SITE = {
       moons: [
         { name: 'negation taxonomy',    dr: 50, period: 17, e: 0.06, rot: 0.4, href: 'https://docs.google.com/document/d/1bIu_TZ74EtzlIcLg9-SXu6GmK8S7GPPsve7MUjhKLeY/preview', body: 'ghosting outranks gaslighting; honesty and politeness are orthogonal' },
         { name: 'gricean classifier',   dr: 74, period: 25, e: 0.12, rot: 2.1, href: 'https://github.com/taliaduckie/grice-maxim-classifier', body: 'roberta-base fine-tuned to classify utterances by which gricean maxim they violate (quality, quantity, relevance, manner)' },
-        { name: 'irony and projection', dr: 96, period: 34, e: 0.08, rot: 4.0, href: '#', body: 'Placeholder: irony and what it projects onto the common ground.' }
+        { name: 'irony and projection', dr: 96, period: 34, e: 0.08, rot: 4.0, href: '#', body: 'Some of my undergraduate work focused on irony and presupposition projection: how ironic speech deliberately violates cooperative norms to communicate more than what’s said, and how certain presupposed content survives embedding under negation and conditionals irrespective of context.' }
       ]
     },
     {
@@ -63,7 +63,7 @@ const SITE = {
       moons: [
         { name: 'fine, i’ll be aligned',                 dr: 52,  period: 19, e: 0.05, rot: 1.0, href: 'https://taliahonikman.substack.com/p/fine-ill-be-aligned', body: 'what “alignment faking” borrows from someone saying “fine” when they’re not' },
         { name: '“hallucination” is the wrong metaphor', dr: 78,  period: 28, e: 0.14, rot: 3.0, href: '#', body: 'Placeholder: why “hallucination” is the wrong metaphor.' },
-        { name: 'sycophancy mapping',                    dr: 100, period: 37, e: 0.09, rot: 5.1, href: '#', body: 'Placeholder: mapping sycophancy in model responses.' }
+        { name: 'sycophancy mapping',                    dr: 100, period: 37, e: 0.09, rot: 5.1, href: '#', body: 'in progress: sycophancy mapping in language models. how a discourse classifier’s blind spots (moments that it can’t tell genuine agreement from people-pleasing) reveal something about the mechanisms of AI-related adulation' }
       ]
     },
     {
