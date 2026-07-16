@@ -72,15 +72,22 @@ const SITE = {
       color: '#b06a2c', r: 21, a: 348, e: 0.06, period: 152, rot: 2.05,
       moons: [
         { name: 'pasta mechanics',        dr: 48, period: 16, e: 0.07, rot: 0.7, href: 'https://docs.google.com/document/d/1883SsckLPuwK758Ua7wjFAL5EVV2zCs7iVY_ZU4UrT4/preview', body: 'In progress: pasta alla gricia fluid mechanics experiment.' },
-        { name: 'chocolate cake saga',    dr: 72, period: 26, e: 0.10, rot: 2.6, href: '#', body: 'Documentation of chocolate cake recipe development, beginning c. April 2020.' },
+        { name: 'chocolate cake saga',    dr: 72, period: 26, e: 0.10, rot: 2.6, href: '#',
+          body: 'Documentation of chocolate cake recipe development, beginning c. April 2020.',
+          photos: { 'chocolate cake recipe development': 'photos/chocolate-cake-extravaganza.jpg' } },
         // photos: map a phrase from the body to an image; it becomes a hover-to-peek term
         { name: 'absurd baking projects', dr: 94, period: 34, e: 0.08, rot: 4.6, href: '#',
-          body: 'Recently: croissants, sourdough cinnamon rolls, pizza w/ from scratch mozz.' }
+          body: 'Recently: croissants, sourdough cinnamon rolls, pizza w/ from scratch mozz.',
+          photos: {
+            'croissants': 'photos/croissants-attempt-one.jpg',
+            'sourdough cinnamon rolls': 'photos/apple-cinnamon-rolls.jpg',
+            'pizza w/ from scratch mozz': 'photos/sourdough-marg.jpg'
+          } }
       ]
     },
     {
       name: 'photography',
-      desc: 'portraiture, film, landscape',
+      desc: 'incredibly amateur; film + portraiture',
       color: '#356b6b', r: 18, a: 432, e: 0.16, period: 188, rot: 2.75,
       moons: [
         { name: 'velvia diaries', dr: 50, period: 18, e: 0.08, rot: 1.4, href: '#', body: 'Placeholder: saturated transparencies and the color of late afternoon.' },
