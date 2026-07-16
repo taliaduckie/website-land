@@ -48,6 +48,7 @@
     moons: p.moons.map(m=>({
       name:m.name, dr:m.dr, period:m.period, e:m.e, rot:m.rot,
       body:m.body, href:m.href||'#', slug:slugify(m.name),
+      photos: m.photos || null,
       angle:m.rot, r: 7.2 + m.dr*0.012
     }))
   }));
@@ -935,7 +936,7 @@
   function openMoon(m, parent){
     mDomain.textContent = parent.name;
     mTitle.textContent = m.name;
-    mBody.textContent = m.body;
+    renderMoonBody(m);
     const hasLink = m.href && m.href !== '#';          // text-only moons show no dead "open →"
     mLink.style.display = hasLink ? '' : 'none';
     mLink.href = hasLink ? m.href : '#';
@@ -951,9 +952,47 @@
     moonPanel.style.left = left+'px';
     moonPanel.style.top = top+'px';
   }
-  function closeMoon(){ moonPanel.classList.remove('show'); }
+  function closeMoon(){ moonPanel.classList.remove('show'); hidePeek(); }
   moonPanel.querySelector('.m-close').addEventListener('click', ()=>writeHash(focused?focused.slug:''));
   mLink.addEventListener('click', e=>{ if(mLink.getAttribute('href')==='#') e.preventDefault(); });
+
+  // card body — phrases listed in a moon's `photos` map become hover-to-peek terms
+  const peekEl = document.getElementById('photoPeek');
+  const peekImg = peekEl.querySelector('img');
+  function renderMoonBody(m){
+    mBody.textContent = '';
+    if(!m.photos){ mBody.textContent = m.body; return; }
+    const found = [];
+    for(const term in m.photos){
+      const i = m.body.indexOf(term);
+      if(i >= 0) found.push({ i, term, src: m.photos[term] });
+    }
+    found.sort((a,b)=>a.i-b.i);
+    let pos = 0;
+    for(const f of found){
+      if(f.i < pos) continue;
+      if(f.i > pos) mBody.appendChild(document.createTextNode(m.body.slice(pos, f.i)));
+      const sp = document.createElement('span');
+      sp.className = 'm-photo';
+      sp.textContent = f.term;
+      sp.dataset.img = f.src;
+      mBody.appendChild(sp);
+      pos = f.i + f.term.length;
+    }
+    mBody.appendChild(document.createTextNode(m.body.slice(pos)));
+  }
+  function showPeek(t){
+    peekImg.src = t.dataset.img;
+    const r = t.getBoundingClientRect();
+    peekEl.style.left = Math.max(135, Math.min(W-135, r.left + r.width/2)) + 'px';
+    if(r.top > 240){ peekEl.style.top = (r.top - 10)+'px'; peekEl.style.transform = 'translate(-50%,-100%)'; }
+    else            { peekEl.style.top = (r.bottom + 10)+'px'; peekEl.style.transform = 'translate(-50%,0)'; }
+    peekEl.classList.add('show');
+  }
+  function hidePeek(){ peekEl.classList.remove('show'); }
+  mBody.addEventListener('mouseover', e=>{ const t = e.target.closest('.m-photo'); if(t) showPeek(t); });
+  mBody.addEventListener('mouseout',  e=>{ if(e.target.closest('.m-photo')) hidePeek(); });
+  mBody.addEventListener('click',     e=>{ const t = e.target.closest('.m-photo'); if(!t) return; peekEl.classList.contains('show') ? hidePeek() : showPeek(t); }); // tap toggles
 
   function openAbout(){ closeMoon(); aboutPanel.classList.add('show'); hintEl.style.opacity='0'; setHover(null); }
   function closeAbout(){ aboutPanel.classList.remove('show'); if(mode==='system') hintEl.style.opacity='0.7'; }
