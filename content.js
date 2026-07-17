@@ -77,21 +77,34 @@ const SITE = {
           photos: { 'chocolate cake recipe development': 'photos/chocolate-cake-extravaganza.jpg' } },
         // photos: map a phrase from the body to an image; it becomes a hover-to-peek term
         { name: 'absurd baking projects', dr: 94, period: 34, e: 0.08, rot: 4.6, href: '#',
-          body: 'Recently: croissants, sourdough cinnamon rolls, pizza w/ from scratch mozz.',
+          body: 'Recently: croissants, apple sourdough cinnamon rolls, pizza w/ from scratch mozz.',
           photos: {
             'croissants': 'photos/croissants-attempt-one.jpg',
-            'sourdough cinnamon rolls': 'photos/apple-cinnamon-rolls.jpg',
+            'apple sourdough cinnamon rolls': 'photos/apple-cinnamon-rolls.jpg',
             'pizza w/ from scratch mozz': 'photos/sourdough-marg.jpg'
           } }
       ]
     },
     {
-      name: 'photography',e
+      name: 'photography',
       desc: 'incredibly amateur; film + portraiture',
       color: '#356b6b', r: 18, a: 432, e: 0.16, period: 188, rot: 2.75,
       moons: [
-        { name: 'velvia diaries', dr: 50, period: 18, e: 0.08, rot: 1.4, href: '#', body: 'Placeholder: saturated transparencies and the color of late afternoon.' },
-        { name: 'portraiture',    dr: 74, period: 27, e: 0.13, rot: 3.5, href: '#', body: 'Placeholder: portraits — light and people.' },
+        { name: 'velvia diaries', dr: 50, period: 18, e: 0.08, rot: 1.4, href: '#',
+          body: 'Shot on Velvia: Gaviota Peak, Half Moon Bay, the streets of Padua, tulips in DC.',
+          photos: {
+            'Gaviota Peak': 'photos/gaviota-peak-velvia.jpg',
+            'Half Moon Bay': 'photos/half-moon-bay-velvia.jpg',
+            'the streets of Padua': 'photos/streets-of-padua-velvia.jpg',
+            'tulips in DC': 'photos/tulips-dc-velvia.jpg'
+          } },
+        { name: 'portraiture',    dr: 74, period: 27, e: 0.13, rot: 3.5, href: '#',
+          body: 'Portraits of the people I love: Jason, Maya, Nic.',
+          photos: {
+            'Jason': 'photos/Jason.jpg',
+            'Maya': 'photos/Maya.jpg',
+            'Nic': 'photos/Nic.jpg'
+          } },
         { name: 'miscellaneous',  dr: 96, period: 35, e: 0.06, rot: 5.6, href: '#', body: 'Placeholder: everything that doesn’t fit elsewhere.' }
       ]
     },
