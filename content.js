@@ -74,10 +74,10 @@ const SITE = {
         { name: 'pasta mechanics',        dr: 48, period: 16, e: 0.07, rot: 0.7, href: 'https://docs.google.com/document/d/1883SsckLPuwK758Ua7wjFAL5EVV2zCs7iVY_ZU4UrT4/preview', body: 'In progress: pasta alla gricia fluid mechanics experiment.' },
         { name: 'american breakfast cereal model', dr: 72, period: 26, e: 0.10, rot: 2.6,
           links: [
-            { label: 'the writeup',  href: 'https://taliahonikman.substack.com/p/ranking-american-breakfast-cereals' },
-            { label: 'cereal space', href: 'https://taliacerealspace.com/' }
+            { label: 'the writeup',    href: 'https://taliahonikman.substack.com/p/ranking-american-breakfast-cereals' },
+            { label: 'model website',  href: 'https://taliacerealspace.com/' }
           ],
-          body: 'Placeholder: american breakfast cereal model.' },
+          body: 'A tier ranking of (most) of the americana canon.' },
         // photos: map a phrase from the body to an image; it becomes a hover-to-peek term
         { name: 'absurd baking projects', dr: 94, period: 34, e: 0.08, rot: 4.6, href: '#',
           body: 'Recently: croissants, apple sourdough cinnamon rolls, pizza w/ from scratch mozz.',
