@@ -11,7 +11,7 @@
   const mDomain = moonPanel.querySelector('.m-domain');
   const mTitle = moonPanel.querySelector('.m-title');
   const mBody = moonPanel.querySelector('.m-body');
-  const mLink = moonPanel.querySelector('.m-link');
+  const mLinks = moonPanel.querySelector('.m-links');
   const aboutPanel = document.getElementById('aboutPanel');
   const backBtn = document.getElementById('backBtn');
   const hintEl = document.getElementById('hint');
@@ -47,7 +47,7 @@
     } : null,
     moons: p.moons.map(m=>({
       name:m.name, dr:m.dr, period:m.period, e:m.e, rot:m.rot,
-      body:m.body, href:m.href||'#', slug:slugify(m.name),
+      body:m.body, href:m.href||'#', links:m.links||null, slug:slugify(m.name),
       photos: m.photos || null,
       angle:m.rot, r: 7.2 + m.dr*0.012
     }))
@@ -937,10 +937,14 @@
     mDomain.textContent = parent.name;
     mTitle.textContent = m.name;
     renderMoonBody(m);
-    const hasLink = m.href && m.href !== '#';          // text-only moons show no dead "open →"
-    mLink.style.display = hasLink ? '' : 'none';
-    mLink.href = hasLink ? m.href : '#';
-    mLink.target = '_blank'; mLink.rel = 'noopener';   // open outbound links in a new tab
+    mLinks.innerHTML = '';                              // one, many, or no links per moon
+    for(const l of moonLinks(m)){
+      const a = document.createElement('a');
+      a.className = 'm-link'; a.href = l.href;
+      a.target = '_blank'; a.rel = 'noopener';          // outbound links open in a new tab
+      a.innerHTML = (l.label || 'open') + ' &rarr;';
+      mLinks.appendChild(a);
+    }
     moonPanel.classList.add('show');
     // place near moon, clamped to view
     const s = toScreen(m.wx,m.wy);
@@ -954,7 +958,12 @@
   }
   function closeMoon(){ moonPanel.classList.remove('show'); hidePeek(); }
   moonPanel.querySelector('.m-close').addEventListener('click', ()=>writeHash(focused?focused.slug:''));
-  mLink.addEventListener('click', e=>{ if(mLink.getAttribute('href')==='#') e.preventDefault(); });
+  // a moon can carry `links: [{label, href}, ...]` for several, or a single `href`
+  function moonLinks(m){
+    if(Array.isArray(m.links)) return m.links.filter(l=>l && l.href && l.href!=='#');
+    if(m.href && m.href!=='#') return [{ label:'open', href:m.href }];
+    return [];
+  }
 
   // card body — phrases listed in a moon's `photos` map become hover-to-peek terms
   const peekEl = document.getElementById('photoPeek');

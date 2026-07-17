@@ -92,6 +92,9 @@ body{
   color:var(--ink-dim);
   max-width:250px;margin:0 auto 18px;
 }
+#moonPanel .m-links{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:18px;
+}
 #moonPanel .m-link{
   font-family:"IM Fell English",serif;
   font-size:15px;
