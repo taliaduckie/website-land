@@ -118,7 +118,7 @@ const SITE = {
       moons: [
         { name: 'essays',       dr: 50, period: 17, e: 0.07, rot: 0.9,
           links: [{ label: 'the hedge', href: 'https://taliahonikman.substack.com/' }],
-          body: 'Placeholder: longer pieces.' },
+          body: 'Longer pieces.' },
         { name: 'reading list', dr: 76, period: 27, e: 0.11, rot: 3.2, href: '#', body: 'Placeholder: what’s on the desk right now.' },
         { name: 'fiction',      dr: 98, period: 36, e: 0.05, rot: 5.4, href: '#', body: 'Placeholder: short fiction.' }
       ]
@@ -136,7 +136,7 @@ const SITE = {
             { label: 'the road not chosen', href: 'https://taliahonikman.substack.com/p/the-road-not-chosen' },
             { label: 'violin logic',        href: 'https://taliahonikman.substack.com/p/violin-logic' }
           ],
-          body: 'Placeholder: essays about playing and listening.' },
+          body: '' },
         { name: 'recordings',     dr: 78, period: 28, e: 0.11, rot: 3.0, href: '#', body: 'Incoming...' }
       ]
     }

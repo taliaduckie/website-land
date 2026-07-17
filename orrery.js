@@ -970,7 +970,8 @@
   const peekImg = peekEl.querySelector('img');
   function renderMoonBody(m){
     mBody.textContent = '';
-    if(!m.photos){ mBody.textContent = m.body; return; }
+    mBody.style.display = m.body ? '' : 'none';   // no empty gap for links-only moons
+    if(!m.photos){ mBody.textContent = m.body || ''; return; }
     const found = [];
     for(const term in m.photos){
       const i = m.body.indexOf(term);
