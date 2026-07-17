@@ -102,13 +102,13 @@ const SITE = {
             'tulips in DC': 'photos/tulips-dc-velvia.jpg'
           } },
         { name: 'portraiture',    dr: 74, period: 27, e: 0.13, rot: 3.5, href: '#',
-          body: 'Portraits of the people I love: Jason, Maya, Nic.',
+          body: 'Portraits of friends: Jason, Maya, Nic.',
           photos: {
             'Jason': 'photos/Jason.jpg',
             'Maya': 'photos/Maya.jpg',
             'Nic': 'photos/Nic.jpg'
           } },
-        { name: 'miscellaneous',  dr: 96, period: 35, e: 0.06, rot: 5.6, href: '#', body: 'Placeholder: everything that doesn’t fit elsewhere.' }
+        { name: 'miscellaneous',  dr: 96, period: 35, e: 0.06, rot: 5.6, href: '#', body: 'Mostly dog and airplane pictures...' }
       ]
     },
     {
@@ -116,7 +116,9 @@ const SITE = {
       desc: 'about various topics and miscellany',
       color: '#7a3f57', r: 24, a: 175, e: 0.09, period: 74, rot: 0.35,
       moons: [
-        { name: 'essays',       dr: 50, period: 17, e: 0.07, rot: 0.9, href: '#', body: 'Placeholder: longer pieces.' },
+        { name: 'essays',       dr: 50, period: 17, e: 0.07, rot: 0.9,
+          links: [{ label: 'the hedge', href: 'https://taliahonikman.substack.com/' }],
+          body: 'Placeholder: longer pieces.' },
         { name: 'reading list', dr: 76, period: 27, e: 0.11, rot: 3.2, href: '#', body: 'Placeholder: what’s on the desk right now.' },
         { name: 'fiction',      dr: 98, period: 36, e: 0.05, rot: 5.4, href: '#', body: 'Placeholder: short fiction.' }
       ]
@@ -129,8 +131,13 @@ const SITE = {
       // the ellipse (0 = edge-on, 1 = face-on), angle tips the ring in radians
       ring: { inner: 1.72, outer: 2.12, tilt: 0.34, angle: -0.55, color: '#c2ad88' },
       moons: [
-        { name: 'related essays', dr: 50, period: 18, e: 0.07, rot: 0.6, href: '#', body: 'Placeholder: essays about playing and listening.' },
-        { name: 'recordings',     dr: 78, period: 28, e: 0.11, rot: 3.0, href: '#', body: 'Placeholder: recordings. (link coming)' }
+        { name: 'related essays', dr: 50, period: 18, e: 0.07, rot: 0.6,
+          links: [
+            { label: 'the road not chosen', href: 'https://taliahonikman.substack.com/p/the-road-not-chosen' },
+            { label: 'violin logic',        href: 'https://taliahonikman.substack.com/p/violin-logic' }
+          ],
+          body: 'Placeholder: essays about playing and listening.' },
+        { name: 'recordings',     dr: 78, period: 28, e: 0.11, rot: 3.0, href: '#', body: 'Incoming...' }
       ]
     }
   ]
