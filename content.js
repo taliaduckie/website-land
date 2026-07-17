@@ -24,7 +24,7 @@ const SITE = {
       kicker: '',          // maybe beb small line above the name; leave '' to hide
       name: 'Talia Honikman',
       paragraphs: [
-        "I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, and food. Human communication forms are inherently lossy; for me this is what makes them so fascinating!"
+        "Hi! I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, food etc. Human communication forms are inherently lossy and for me this is what makes them worth thinking about."
       ],
       links: [
         { label: 'email', href: 'mailto:tbhonikman@gmail.com' },
@@ -86,7 +86,7 @@ const SITE = {
       ]
     },
     {
-      name: 'photography',
+      name: 'photography',e
       desc: 'incredibly amateur; film + portraiture',
       color: '#356b6b', r: 18, a: 432, e: 0.16, period: 188, rot: 2.75,
       moons: [
