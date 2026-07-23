@@ -968,10 +968,16 @@
   // card body — phrases listed in a moon's `photos` map become hover-to-peek terms
   const peekEl = document.getElementById('photoPeek');
   const peekImg = peekEl.querySelector('img');
+  function appendText(node, text){   // honor \n as line breaks
+    String(text).split('\n').forEach((line, i)=>{
+      if(i) node.appendChild(document.createElement('br'));
+      if(line) node.appendChild(document.createTextNode(line));
+    });
+  }
   function renderMoonBody(m){
     mBody.textContent = '';
     mBody.style.display = m.body ? '' : 'none';   // no empty gap for links-only moons
-    if(!m.photos){ mBody.textContent = m.body || ''; return; }
+    if(!m.photos){ appendText(mBody, m.body || ''); return; }
     const found = [];
     for(const term in m.photos){
       const i = m.body.indexOf(term);
