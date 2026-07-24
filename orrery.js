@@ -1057,6 +1057,32 @@
     });
   }
 
+  // hidden text outline for search engines & screen readers, from SITE (single source of truth)
+  function buildA11y(){
+    const el = document.getElementById('a11y');
+    if(!el) return;
+    const esc = t => String(t).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const clean = t => esc(String(t||'').replace(/\*/g,'').replace(/\n/g,' '));  // strip italic markers / line breaks
+    const a = SITE.sun.about || {};
+    let h = '<h1>'+esc(a.name || SITE.sun.label)+'</h1>';
+    (a.paragraphs||[]).forEach(p=> h += '<p>'+clean(p)+'</p>');
+    h += '<ul>';
+    (a.links||[]).concat(SITE.social||[]).forEach(l=>{ if(l&&l.href) h += '<li><a href="'+esc(l.href)+'">'+esc(l.label)+'</a></li>'; });
+    h += '</ul>';
+    (SITE.planets||[]).forEach(p=>{
+      h += '<section><h2>'+esc(p.name)+'</h2><p>'+clean(p.desc)+'</p><ul>';
+      (p.moons||[]).forEach(m=>{
+        h += '<li><h3>'+esc(m.name)+'</h3>';
+        if(m.body) h += '<p>'+clean(m.body)+'</p>';
+        const links = Array.isArray(m.links) ? m.links : (m.href && m.href!=='#' ? [{label:'link',href:m.href}] : []);
+        links.forEach(l=>{ if(l&&l.href) h += ' <a href="'+esc(l.href)+'">'+esc(l.label||'link')+'</a>'; });
+        h += '</li>';
+      });
+      h += '</ul></section>';
+    });
+    el.innerHTML = h;
+  }
+
   // url hash <-> state (so back/forward work)
   function currentHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')); }
   function writeHash(h){
@@ -1206,6 +1232,7 @@
   function boot(){
     buildAbout();
     buildSocial();
+    buildA11y();
     resize();
     view.scale = fitScale; target.scale = fitScale;
     view.cx=0; view.cy=0; target.cx=0; target.cy=0;
