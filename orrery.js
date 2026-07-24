@@ -567,12 +567,14 @@
 
     for(let i=trail.length-1;i>=0;i--){ trail[i].life *= 0.9; if(trail[i].life < 0.03) trail.splice(i,1); }
 
-    if(meteor){
-      meteor.x += meteor.vx*dt; meteor.y += meteor.vy*dt; meteor.life -= dt;
-      if(meteor.life<=0 || meteor.y>H+120 || meteor.x<-120 || meteor.x>W+120) meteor = null;
-    } else {
-      nextMeteorIn -= dt;
-      if(nextMeteorIn<=0){ spawnMeteor(); nextMeteorIn = 90 + Math.random()*120; }
+    if(!reduced){
+      if(meteor){
+        meteor.x += meteor.vx*dt; meteor.y += meteor.vy*dt; meteor.life -= dt;
+        if(meteor.life<=0 || meteor.y>H+120 || meteor.x<-120 || meteor.x>W+120) meteor = null;
+      } else {
+        nextMeteorIn -= dt;
+        if(nextMeteorIn<=0){ spawnMeteor(); nextMeteorIn = 90 + Math.random()*120; }
+      }
     }
 
     if(gameOn){
@@ -1105,7 +1107,8 @@
   const HOLD_MS=300, MOVE_TOL=12;
 
   function onMouseMove(x,y){
-    mouse.x=x; mouse.y=y; mouse.active=true;
+    mouse.x=x; mouse.y=y; mouse.active=true;   // hover still works under reduced motion
+    if(reduced) return;                        // ...but no parallax drift or comet trail
     pmtx = Math.max(-1, Math.min(1, (x - W/2)/(W/2)));
     pmty = Math.max(-1, Math.min(1, (y - H/2)/(H/2)));
     trail.push({x, y, life:1});
