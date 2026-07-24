@@ -53,7 +53,8 @@
     }))
   }));
 
-  const ORBIT_SPEED = 1;   // 1 = original, lower = calmer
+  const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const ORBIT_SPEED = reduced ? 0 : 1;   // 1 = original, lower = calmer; 0 = frozen for reduced motion
   PLANETS.forEach(p=>{
     p.b = p.a * Math.sqrt(1 - p.e*p.e);
     p.angle = p.rot * 1.7; // staggered phases
@@ -552,7 +553,7 @@
     if(focused){ target.cx = focused.wx; target.cy = focused.wy; }
 
     // ease camera shit
-    const k = 1 - Math.pow(0.0009, dt);
+    const k = reduced ? 1 : (1 - Math.pow(0.0009, dt));   // reduced motion: snap instead of ease
     view.scale += (target.scale - view.scale)*k;
     view.cx    += (target.cx    - view.cx)*k;
     view.cy    += (target.cy    - view.cy)*k;
