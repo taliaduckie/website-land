@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>Talia Honikman</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<meta name="description" content="Talia Honikman — a personal site built as an orrery of intellectual interests: pragmatics, humanities- and linguistics-oriented AI, food science, film photography, writing, and violin." />
+<meta name="author" content="Talia Honikman" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Talia Honikman" />
+<meta property="og:description" content="An orrery of intellectual interests — pragmatics, AI, food science, photography, writing, violin." />
+<meta name="twitter:card" content="summary" />
+<!-- once hosted, add absolute URLs for a rich link preview:
+<meta property="og:url" content="https://YOURDOMAIN/" />
+<meta property="og:image" content="https://YOURDOMAIN/preview.png" />
+<meta name="twitter:image" content="https://YOURDOMAIN/preview.png" /> -->
+<meta name="robots" content="index, follow" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -13,6 +24,19 @@
 <body>
   <canvas id="stage"></canvas>
   <canvas id="comet"></canvas>
+
+  <!-- text layer for search engines & screen readers (the orrery is canvas-only); built from content.js -->
+  <main id="a11y" class="sr-only"></main>
+  <noscript>
+    <div class="noscript">
+      <h1>Talia Honikman</h1>
+      <p>Curious about the gap between what's said and what's meant — pragmatics, language models, photography, and food.</p>
+      <p><a href="mailto:tbhonikman@gmail.com">email</a> ·
+         <a href="https://www.linkedin.com/in/talia-b-honikman/">LinkedIn</a> ·
+         <a href="https://taliahonikman.substack.com/">Substack</a> ·
+         <a href="https://github.com/taliaduckie">GitHub</a></p>
+    </div>
+  </noscript>
 
   <div id="tip"><div class="t-name"></div><div class="t-desc"></div></div>
 
