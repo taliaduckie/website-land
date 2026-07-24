@@ -121,7 +121,7 @@ const SITE = {
           links: [{ label: 'the hedge', href: 'https://taliahonikman.substack.com/' }],
           body: 'Longer pieces.' },
         { name: 'reading list', dr: 76, period: 27, e: 0.11, rot: 3.2, href: '#',
-          body: 'Recently loved: Seveneves (Stephenson), Now Is Not the Time to Panic (Wilson), On Not Knowing (Ogden), Consolations II (Whyte).\nAll-time: Musicophilia (Sacks), Assholes: A Theory (James), Round Ireland with a Fridge (Hawks), Superintelligence (Bostrom), Symphony for the City of the Dead (Anderson).' },
+          body: 'Recently loved: *Seveneves* (Stephenson), *Now Is Not the Time to Panic* (Wilson), *On Not Knowing* (Ogden), *Consolations II* (Whyte).\nAll-time: *Musicophilia* (Sacks), *Assholes: A Theory* (James), *Round Ireland with a Fridge* (Hawks), *Superintelligence* (Bostrom), *Symphony for the City of the Dead* (Anderson).' },
         { name: 'fiction',      dr: 98, period: 36, e: 0.05, rot: 5.4, href: '#', body: 'Written constantly, published never (so far).' }
       ]
     },

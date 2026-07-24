@@ -971,10 +971,14 @@
   // card body — phrases listed in a moon's `photos` map become hover-to-peek terms
   const peekEl = document.getElementById('photoPeek');
   const peekImg = peekEl.querySelector('img');
-  function appendText(node, text){   // honor \n as line breaks
-    String(text).split('\n').forEach((line, i)=>{
-      if(i) node.appendChild(document.createElement('br'));
-      if(line) node.appendChild(document.createTextNode(line));
+  function appendText(node, text){   // \n → line break, *phrase* → italic
+    String(text).split('\n').forEach((line, li)=>{
+      if(li) node.appendChild(document.createElement('br'));
+      line.split(/\*([^*]+)\*/g).forEach((seg, i)=>{
+        if(!seg) return;
+        if(i % 2){ const em = document.createElement('em'); em.textContent = seg; node.appendChild(em); }
+        else node.appendChild(document.createTextNode(seg));
+      });
     });
   }
   function renderMoonBody(m){
