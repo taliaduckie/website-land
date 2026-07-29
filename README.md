@@ -47,7 +47,7 @@ depth: mouse parallax shifts bg/sun/rings/planets by different amounts (par + PX
 mouse: live hit-test on pointermove. touch: hold-to-hover (300ms), tap = click.
 deep links: the URL hash mirrors state (#ai-thoughts, #ai-thoughts/sycophancy-mapping, #about) so back/forward + sharing a specific thing work.
 respects prefers-reduced-motion: freezes orbits, kills parallax/comet/shooting-stars, snaps the camera instead of easing.
-hidden #a11y text layer (built from SITE) + og/meta tags so search engines & screen readers get the content the canvas otherwise hides.
+hidden #a11y text layer (built from SITE) + og/meta tags so search engines & screen readers get the content the canvas otherwise hides. a deploy-time Action (prerender.js) also bakes that outline into static index.html, so non-JS crawlers get it too — you still just edit content.js.
 
 secret: konami code (↑ ↑ ↓ ↓ ← → ← → b a) or just type "comet" → a little gravity sandbox. pull back & release to fling a comet that orbits the sun and slingshots the planets. esc to leave.
 
