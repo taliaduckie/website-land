@@ -1103,8 +1103,10 @@
   function handleClick(sx,sy){
     const hit = hitTest(sx,sy);
     if(!hit){
+      // tapping empty space backs out one level — same ladder as esc
       if(moonPanel.classList.contains('show')) writeHash(focused?focused.slug:'');
       else if(aboutPanel.classList.contains('show')) writeHash('');
+      else if(mode==='planet') writeHash('');
       return;
     }
     if(hit.type==='planet' && mode==='system'){ writeHash(hit.obj.slug); }
