@@ -794,9 +794,11 @@
     {
       const s = toScreen(0,0,par.sun.x,par.sun.y);
       const a = (focused ? otherAlpha : 1);
-      ctx.font = '700 italic 15px "IM Fell English", serif';
+      ctx.font = '15px "IM Fell English", serif';   // matches the #social links
+      ctx.letterSpacing = '.4px';
       ctx.fillStyle = rgba(hexRgb('#f6f3ee'), 0.78*a);
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
+      ctx.letterSpacing = '0px';                    // canvas state persists — don't leak into planet labels
     }
 
     // planet name only as the "you are here" heading when focused (hover uses the tooltip)
