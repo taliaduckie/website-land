@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<!-- no maximum-scale/user-scalable: that's a WCAG 1.4.4 fail. canvas gestures are handled by
+     touch-action:none on #stage, so pinch still works on the panels where the text actually is. -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Talia Honikman</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <meta name="description" content="Talia Honikman — a personal site built as an orrery of intellectual interests: pragmatics, humanities- and linguistics-oriented AI, food science, film photography, writing, and violin." />
