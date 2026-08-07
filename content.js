@@ -37,7 +37,8 @@ const SITE = {
   social: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/talia-b-honikman/' },
     { label: 'Substack', href: 'https://taliahonikman.substack.com/' },
-    { label: 'GitHub',   href: 'https://github.com/taliaduckie' }
+    { label: 'GitHub',   href: 'https://github.com/taliaduckie' },
+    { label: 'RSS',      href: 'https://taliahonikman.substack.com/feed' }
   ],
 
   // varied sizes (emphasis?), orbits, eccentricities, periods (slow, all different)
