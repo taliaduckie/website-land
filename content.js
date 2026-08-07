@@ -16,7 +16,7 @@
 
 const SITE = {
   sun: {
-    label: 'Talia Honikman',   // <- shown under the sun
+    label: 'hi!',   // <- shown under the sun
     desc:  'click to read more',
     color: '#c47a2f',
     r: 46,
