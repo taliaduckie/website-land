@@ -250,5 +250,6 @@ body{
   white-space:nowrap;
 }
 @media (max-width:560px){
-  #hint{font-size:9.5px;letter-spacing:1.1px;}
+  /* wrap instead of clipping: nowrap + a 3-part hint overflows a phone screen */
+  #hint{font-size:9.5px;letter-spacing:1.1px;white-space:normal;max-width:88vw;line-height:1.7;}
 }
