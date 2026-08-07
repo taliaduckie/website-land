@@ -1,6 +1,6 @@
 Interactive orrery as a personal site. vanilla JS, single `<canvas>`, no framework, no build step.
 
-live @ https://taliaduckie.github.io/website-land/
+live @ https://taliaduckie.github.io/orrery/
 
 Concept
 
