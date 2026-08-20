@@ -589,7 +589,8 @@
           if(ufo.beam <= 0){                       // beam done — pay out the coin flip
             const what = ufo.pending;
             if(what === 'game'){ ufo = null; enterGame(); }
-            else { ufo.pending = null; ufo.vx *= 7; }   // caught, spooked, gone
+            else { ufo.pending = 'gone'; ufo.vx *= 7; }   // caught, spooked, gone.
+            // stays truthy so hitUfo won't let you chase it down and re-roll the coin
           }
         }
         if(ufo && (ufo.x < -90 || ufo.x > W+90)) ufo = null;
