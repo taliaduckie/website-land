@@ -377,6 +377,11 @@
 
   let meteor = null, nextMeteorIn = 12 + Math.random()*22;   // ambient shooting stars
 
+  // ambient UFO. rarer and much slower than a meteor because unlike one, you're meant to catch it.
+  // tapping flips a coin: half the time it opens the comet sandbox, half the time it just bolts.
+  let ufo = null, nextUfoIn = 45 + Math.random()*60;
+  const UFO_HIT = 30;   // generous tap radius — it's small, moving, and often a thumb
+
   // hidden comet sandbox (konami) — tune to taste
   const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
   let gameOn=false, aiming=false, aim=null, firstPull=true;
@@ -575,6 +580,23 @@
         nextMeteorIn -= dt;
         if(nextMeteorIn<=0){ spawnMeteor(); nextMeteorIn = 90 + Math.random()*120; }
       }
+
+      if(ufo){
+        ufo.t += dt;
+        ufo.x += ufo.vx*dt;
+        if(ufo.beam > 0){
+          ufo.beam -= dt*1.6;
+          if(ufo.beam <= 0){                       // beam done — pay out the coin flip
+            const what = ufo.pending;
+            if(what === 'game'){ ufo = null; enterGame(); }
+            else { ufo.pending = null; ufo.vx *= 7; }   // caught, spooked, gone
+          }
+        }
+        if(ufo && (ufo.x < -90 || ufo.x > W+90)) ufo = null;
+      } else if(!gameOn){                          // no new arrivals mid-sandbox
+        nextUfoIn -= dt;
+        if(nextUfoIn<=0){ spawnUfo(); nextUfoIn = 150 + Math.random()*200; }
+      }
     }
 
     if(gameOn){
@@ -722,6 +744,56 @@
     ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(hx,hy); ctx.lineTo(tx,ty); ctx.stroke();
     ctx.lineCap = 'butt';
+  }
+
+  function spawnUfo(){
+    const dir = Math.random()<0.5 ? 1 : -1;
+    ufo = {
+      x: dir>0 ? -50 : W+50,
+      y: H*(0.12 + Math.random()*0.45),
+      vx: dir*(W+H)*0.035,   // slow enough to actually be tapped
+      t: 0,
+      beam: 0,               // counts down while the tractor beam is lit
+      pending: null          // what to do once the beam finishes: 'game' | 'flee'
+    };
+  }
+
+  function hitUfo(sx,sy){
+    return !!ufo && !ufo.pending && Math.hypot(sx-ufo.x, sy-ufo.y) <= UFO_HIT;
+  }
+
+  function tapUfo(){
+    ufo.beam = 1;
+    ufo.pending = Math.random()<0.5 ? 'game' : 'flee';   // coin flip, so it stays a surprise
+  }
+
+  function drawUfo(){
+    const bob = Math.sin(ufo.t*1.9)*3;
+    const x = ufo.x, y = ufo.y + bob;
+
+    if(ufo.beam > 0){
+      const a = Math.max(0, Math.min(1, ufo.beam));
+      const g = ctx.createLinearGradient(x, y, x, y+120);
+      g.addColorStop(0, 'rgba(217,152,90,'+(0.42*a)+')');
+      g.addColorStop(1, 'rgba(217,152,90,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(x-6, y+4); ctx.lineTo(x+6, y+4);
+      ctx.lineTo(x+30, y+120); ctx.lineTo(x-30, y+120);
+      ctx.closePath(); ctx.fill();
+    }
+
+    ctx.fillStyle = 'rgba(233,228,220,0.30)';            // dome
+    ctx.beginPath(); ctx.ellipse(x, y-4, 8, 7, 0, Math.PI, 0); ctx.fill();
+
+    ctx.fillStyle = 'rgba(233,228,220,0.82)';            // saucer
+    ctx.beginPath(); ctx.ellipse(x, y, 17, 5.5, 0, 0, Math.PI*2); ctx.fill();
+
+    for(let i=-1; i<=1; i++){                            // running lights
+      const lit = 0.45 + 0.55*Math.abs(Math.sin(ufo.t*3 + i));
+      ctx.fillStyle = 'rgba(217,152,90,'+lit+')';
+      ctx.beginPath(); ctx.arc(x + i*9, y+2.5, 1.5, 0, Math.PI*2); ctx.fill();
+    }
   }
 
   // konami unlocks a little gravity sandbox: drag to launch a comet
@@ -1103,6 +1175,8 @@
   window.addEventListener('hashchange', applyHashState);
 
   function handleClick(sx,sy){
+    if(hitUfo(sx,sy)){ tapUfo(); return; }   // before everything: it floats above the world,
+                                             // and must not read as a tap on empty space
     const hit = hitTest(sx,sy);
     if(!hit){
       // tapping empty space backs out one level — same ladder as esc
@@ -1139,6 +1213,7 @@
     if(e.pointerType==='mouse'){
       onMouseMove(e.clientX, e.clientY);
       setHover(hitTest(e.clientX, e.clientY));
+      if(hitUfo(e.clientX, e.clientY)) canvas.style.cursor = 'pointer';   // after setHover: it owns the cursor
       return;
     }
     if(down){
