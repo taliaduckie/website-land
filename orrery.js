@@ -680,6 +680,7 @@
 
     ctx.setTransform(DPR,0,0,DPR,0,0);
     drawLabels(prog, otherAlpha);
+    if(ufo) drawUfo();   // last: it's a screen-space overlay, and handleClick gives it hit priority
 
     drawComet();
   }
