@@ -4,7 +4,7 @@ live @ https://taliaduckie.github.io/orrery/
 
 Concept
 
-The sun sits @ center w name + about card. Interests/relevant topics are planets. Radius and orbit distance roughly encode emphasis but not super agro about it. Each planet has relevant moons: projects, essays, work etc etc. Click a planet to zoom into its moons, click a moon for its card, click the sun for the about card. esc / pull-back button to zoom out.
+The sun sits @ center w name + about card. Interests/relevant topics are planets. Radius and orbit distance roughly encode emphasis but not super agro about it. Each planet has relevant moons: projects, essays, work etc etc. Click a planet to zoom into its moons, click a moon for its card, click the sun for the about card. esc, the pull-back button, or tapping empty space all back out one level. same ladder, so touch isn't stuck hunting for the button.
 
 Currently orbiting: pragmatics stuff, AI thoughts, bad food science, photography, writing, violin. May change w time!
 
@@ -43,13 +43,14 @@ Camera is an eased target; view chases target for zoom on planet click. Two mode
 Hover freezes that orbit (isPlanetPaused / isMoonPaused, checked in update). labels only show on hover/focus; everything else lives in the tooltip.
 Background: dark-blue sky, ~320 baked stars + 25 real constellation asterisms placed once (random, non-overlapping, ringed *around* the orrery so they never sit under a planet). dwell on a constellation to reveal its star names.
 drawBody: radial gradient lit from the sun's direction + a darkened terminator on the far side + soft bloom + optional seeded drawGlass marbling (seeded so it's stable, not shimmering). rings in two passes (drawRingHalf front/back) so the planet occludes the far arc.
-depth: mouse parallax shifts bg/sun/rings/planets by different amounts (par + PX_* constants, eased so it lags). a comet trail evaporates behind the cursor (#comet overlay). the odd shooting star drifts through.
+depth: mouse parallax shifts bg/sun/rings/planets by different amounts (par + PX_* constants, eased so it lags). a comet trail evaporates behind the cursor (#comet overlay). the odd shooting star drifts through, and rarer still a ufo: same spawn/move/draw shape as the meteor but ~10x slower, because unlike a shooting star you're meant to catch it (see secret below). drawn last in render so it sits above the planets, matching the hit priority handleClick gives it.
 mouse: live hit-test on pointermove. touch: hold-to-hover (300ms), tap = click.
 deep links: the URL hash mirrors state (#ai-thoughts, #ai-thoughts/sycophancy-mapping, #about) so back/forward + sharing a specific thing work.
-respects prefers-reduced-motion: freezes orbits, kills parallax/comet/shooting-stars, snaps the camera instead of easing.
+respects prefers-reduced-motion: freezes orbits, kills parallax/comet/shooting-stars/ufo, snaps the camera instead of easing. note the ufo being gated here means reduced-motion users can only reach the sandbox by keyboard.
 hidden #a11y text layer (built from SITE) + og/meta tags so search engines & screen readers get the content the canvas otherwise hides. a deploy-time Action (prerender.js) also bakes that outline into static index.html, so non-JS crawlers get it too — you still just edit content.js.
 
 secret: konami code (↑ ↑ ↓ ↓ ← → ← → b a) or just type "comet" → a little gravity sandbox. pull back & release to fling a comet that orbits the sun and slingshots the planets. esc to leave.
+third way in, and the only one that works without a keyboard: tap the ufo. it's a coin flip: half the time you get the sandbox, half the time it just bolts. one tap per sighting (pending stays truthy as 'gone' so you can't chase it down and re-roll), and a new one shows up 150-350s after the last leaves.
 
 Fonts and vibes
 
