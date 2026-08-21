@@ -380,7 +380,7 @@
   // ambient UFO. rarer and much slower than a meteor because unlike one, you're meant to catch it.
   // tapping flips a coin: half the time it opens the comet sandbox, half the time it just bolts.
   let ufo = null, nextUfoIn = 45 + Math.random()*60;
-  const UFO_HIT = 30;   // generous tap radius — it's small, moving, and often a thumb
+  const UFO_HIT = 30;   // generous tap radius. it's small, moving, and usually a thumb
 
   // hidden comet sandbox (konami) — tune to taste
   const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
@@ -586,7 +586,7 @@
         ufo.x += ufo.vx*dt;
         if(ufo.beam > 0){
           ufo.beam -= dt*1.6;
-          if(ufo.beam <= 0){                       // beam done — pay out the coin flip
+          if(ufo.beam <= 0){                       // beam done, pay out the coin flip
             const what = ufo.pending;
             if(what === 'game'){ ufo = null; enterGame(); }
             else { ufo.pending = 'gone'; ufo.vx *= 7; }   // caught, spooked, gone.
@@ -872,7 +872,7 @@
       ctx.letterSpacing = '.4px';
       ctx.fillStyle = rgba(hexRgb('#f6f3ee'), 0.78*a);
       ctx.fillText(SUN.label, s.x, s.y + SUN.r*view.scale + 12);
-      ctx.letterSpacing = '0px';                    // canvas state persists — don't leak into planet labels
+      ctx.letterSpacing = '0px';                    // canvas state persists, don't leak into planet labels
     }
 
     // planet name only as the "you are here" heading when focused (hover uses the tooltip)
