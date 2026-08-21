@@ -377,10 +377,10 @@
 
   let meteor = null, nextMeteorIn = 12 + Math.random()*22;   // ambient shooting stars
 
-  // ambient UFO. rarer and much slower than a meteor because unlike one, you're meant to catch it.
-  // tapping flips a coin: half the time it opens the comet sandbox, half the time it just bolts.
+  // slower than meteor bc u gotta catch it (gotta catch em all?
+  // tap it 50/50 sandbox or ZOOMM AWAY
   let ufo = null, nextUfoIn = 45 + Math.random()*60;
-  const UFO_HIT = 30;   // generous tap radius. it's small, moving, and usually a thumb
+  const UFO_HIT = 30;   // fat tap radius, it's tiny and moving
 
   // hidden comet sandbox (konami) — tune to taste
   const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
@@ -589,7 +589,7 @@
           if(ufo.beam <= 0){                       // beam done, pay out the coin flip
             const what = ufo.pending;
             if(what === 'game'){ ufo = null; enterGame(); }
-            else { ufo.pending = 'gone'; ufo.vx *= 7; }   // caught, spooked, gone.
+            else { ufo.pending = 'gone'; ufo.vx *= 7; }   // spooked, gone
             // stays truthy so hitUfo won't let you chase it down and re-roll the coin
           }
         }
@@ -955,17 +955,16 @@
     tipEl.classList.add('show');
     positionConstTip(item);
   }
+  // one #tip so one placer, clamped here so both callers can't drift apart
+  function placeTip(cx, ty){
+    const w = tipEl.offsetWidth, h = tipEl.offsetHeight, m = 10;
+    tipEl.style.left = Math.max(m + w/2, Math.min(W - m - w/2, cx)) + 'px';
+    tipEl.style.top  = Math.max(m + h,   Math.min(H - m,       ty)) + 'px';
+  }
   function positionConstTip(item){
     let minY=Infinity, sumX=0;
     for(const p of item.pts){ sumX += p.bx; if(p.by<minY) minY=p.by; }
-    let cx = sumX/item.pts.length + par.bg.x;
-    let ty = minY + par.bg.y - 12;
-    // clamp within the viewport (tip is centered on cx and sits above ty)
-    const w = tipEl.offsetWidth, h = tipEl.offsetHeight, m = 10;
-    cx = Math.max(m + w/2, Math.min(W - m - w/2, cx));
-    ty = Math.max(m + h,   Math.min(H - m,       ty));
-    tipEl.style.left = cx + 'px';
-    tipEl.style.top  = ty + 'px';
+    placeTip(sumX/item.pts.length + par.bg.x, minY + par.bg.y - 12);
   }
   function positionTip(){
     if(!hoverObj) return;
@@ -974,8 +973,7 @@
     if(hoverObj.type==='sun'){ wx=0;wy=0;r=SUN.r; off=par.sun; }
     else { wx=o.wx; wy=o.wy; r=o.r; off=par.planet; }
     const s = toScreen(wx,wy,off.x,off.y);
-    tipEl.style.left = s.x + 'px';
-    tipEl.style.top  = (s.y - r*view.scale - 14) + 'px';
+    placeTip(s.x, s.y - r*view.scale - 14);
   }
 
   function setHover(obj){
@@ -1178,7 +1176,7 @@
 
   function handleClick(sx,sy){
     if(hitUfo(sx,sy)){ tapUfo(); return; }   // before everything: it floats above the world,
-                                             // and must not read as a tap on empty space
+                                             // and shan't read as a tap on empty space
     const hit = hitTest(sx,sy);
     if(!hit){
       // tapping empty space backs out one level — same ladder as esc
