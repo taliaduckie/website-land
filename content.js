@@ -24,7 +24,8 @@ const SITE = {
       kicker: '',          // maybe beb small line above the name; leave '' to hide
       name: 'Talia Honikman',
       paragraphs: [
-        "Hi! I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, food etc. Human communication forms are inherently lossy and for me this is what makes them worth thinking about."
+        "Hi! I'm curious about the gap between what's said and what's meant. This question is central to many of my interests and also shows up in many seemingly unrelated areas — pragmatics, language models, photography, food etc. Human communication forms are inherently lossy and for me this is what makes them worth thinking about.",
+        "ps: if a ufo drifts past, tap it. 50/50 it takes you somewhere."
       ],
       links: [
         { label: 'email', href: 'mailto:tbhonikman@gmail.com' },

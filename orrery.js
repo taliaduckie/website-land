@@ -364,6 +364,8 @@
   let focused = null;
   let focusTargetScale = 1;
   let hoverObj = null;          // {type, obj, parent?}
+  let openMoonObj = null;       // the moon whose card is up, so it holds still while u read
+  let idleT = 0, nudgeT = 0;    // idle timer + how long the ufo nudge stays up
   let lastT = performance.now();
 
   const mouse = { x:0, y:0, active:false };
@@ -379,7 +381,8 @@
 
   // slower than meteor bc u gotta catch it (gotta catch em all?
   // tap it 50/50 sandbox or ZOOMM AWAY
-  let ufo = null, nextUfoIn = 45 + Math.random()*60;
+  let ufo = null, nextUfoIn = 20 + Math.random()*25;
+  const UFO_TIP = { name:'ufo', desc:'tap it' };   // shown on hover/hold so it reads as tappable
   const UFO_HIT = 30;   // fat tap radius, it's tiny and moving
 
   // hidden comet sandbox (konami) — tune to taste
@@ -540,6 +543,7 @@
     return false;
   }
   function isMoonPaused(m){
+    if(m === openMoonObj) return true;
     return hoverObj && hoverObj.type==='moon' && hoverObj.obj===m;
   }
 
@@ -596,7 +600,17 @@
         if(ufo && (ufo.x < -90 || ufo.x > W+90)) ufo = null;
       } else if(!gameOn){                          // no new arrivals mid-sandbox
         nextUfoIn -= dt;
-        if(nextUfoIn<=0){ spawnUfo(); nextUfoIn = 150 + Math.random()*200; }
+        if(nextUfoIn<=0){ spawnUfo(); nextUfoIn = 60 + Math.random()*40; }
+      }
+      if(!ufo && hoverObj && hoverObj.type==='ufo') setHover(null);
+
+      // nobody finds the sandbox on their own, so nudge lingerers toward the ufo
+      if(nudgeT > 0){
+        nudgeT -= dt;
+        if(nudgeT <= 0) hintEl.innerHTML = hintDefault;
+      } else if(!gameOn && !focused && !moonPanel.classList.contains('show') && !aboutPanel.classList.contains('show')){
+        idleT += dt;
+        if(idleT >= 40){ idleT = -60; nudgeT = 6; hintEl.innerHTML = 'psst &nbsp;&middot;&nbsp; catch the ufo'; }
       }
     }
 
@@ -765,6 +779,7 @@
   }
 
   function tapUfo(){
+    setHover(null);
     ufo.beam = 1;
     ufo.pending = Math.random()<0.5 ? 'game' : 'flee';   // coin flip, so it stays a surprise
   }
@@ -896,6 +911,7 @@
   }
 
   function hitTest(sx,sy){
+    if(hitUfo(sx,sy)) return {type:'ufo', obj:UFO_TIP};   // screen space, so it goes first
     const w = toWorld(sx,sy,par.planet.x,par.planet.y);
     if(focused){
       for(const m of focused.moons){
@@ -970,6 +986,7 @@
     if(!hoverObj) return;
     const o = hoverObj.obj;
     let wx,wy,r,off;
+    if(hoverObj.type==='ufo'){ if(ufo) placeTip(ufo.x, ufo.y - 16); return; }
     if(hoverObj.type==='sun'){ wx=0;wy=0;r=SUN.r; off=par.sun; }
     else { wx=o.wx; wy=o.wy; r=o.r; off=par.planet; }
     const s = toScreen(wx,wy,off.x,off.y);
@@ -1011,6 +1028,7 @@
   }
 
   function openMoon(m, parent){
+    openMoonObj = m;
     mDomain.textContent = parent.name;
     mTitle.textContent = m.name;
     renderMoonBody(m);
@@ -1033,7 +1051,7 @@
     moonPanel.style.left = left+'px';
     moonPanel.style.top = top+'px';
   }
-  function closeMoon(){ moonPanel.classList.remove('show'); hidePeek(); }
+  function closeMoon(){ openMoonObj = null; moonPanel.classList.remove('show'); hidePeek(); }
   moonPanel.querySelector('.m-close').addEventListener('click', ()=>writeHash(focused?focused.slug:''));
   // a moon can carry `links: [{label, href}, ...]` for several, or a single `href`
   function moonLinks(m){
@@ -1213,7 +1231,6 @@
     if(e.pointerType==='mouse'){
       onMouseMove(e.clientX, e.clientY);
       setHover(hitTest(e.clientX, e.clientY));
-      if(hitUfo(e.clientX, e.clientY)) canvas.style.cursor = 'pointer';   // after setHover: it owns the cursor
       return;
     }
     if(down){
@@ -1226,6 +1243,8 @@
   canvas.addEventListener('pointerdown', e=>{
     if(gameOn){ const w=toWorld(e.clientX,e.clientY,par.planet.x,par.planet.y); aim={x0:w.x,y0:w.y,x1:w.x,y1:w.y}; aiming=true; return; }
     down = {x:e.clientX, y:e.clientY, t:performance.now()};
+    idleT = 0;
+    if(nudgeT > 0){ nudgeT = 0; hintEl.innerHTML = hintDefault; }
     moved=false; holdActive=false;
     if(e.pointerType!=='mouse'){
       holdTimer = setTimeout(()=>{
