@@ -387,12 +387,14 @@
   const UFO_HIT = 30;   // fat tap radius, it's tiny and moving
 
   // hidden comet sandbox (konami) — tune to taste
-  const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
+  const G=1, SUN_MASS=9e5, PLANET_MASS=2600, LAUNCH=0.5;
   let gameOn=false, aiming=false, aim=null, firstPull=true;
   const bodies=[];
-  const SOFT=2500, GATE_R=55, SIM_H=1/60, SIM_SPEED=3;   // fixed step, run at 3x so a try is ~15s
+  // SOFT is a softening length of ~16 units. planets are r18-31, so close passes really deflect
+  const SOFT=260, GATE_R=55, SIM_H=1/120, SIM_SPEED=5;   // fixed step, run at 5x so a try is ~15s
   let simAcc=0;
   let course=null, comet=null, gateIdx=0, tries=0, runMsg='', lastHint='';
+  let traceT=0;   // 0>1 draws the route, 1>1.4 fades the rings in after
 
   // hover-a-constellation-long-enough → list its stars
   const CONST_HOVER_R = 70, CONST_DWELL = 0.6;   // px radius, seconds
@@ -621,10 +623,11 @@
     }
 
     if(gameOn && course){
+      if(traceT < 1.4) traceT = Math.min(1.4, traceT + dt/2.4);
       if(comet){
         simAcc += dt*SIM_SPEED;
         let n = 0;
-        while(comet && simAcc >= SIM_H && n < 10){
+        while(comet && simAcc >= SIM_H && n < 24){
           simAcc -= SIM_H; n++;
           const g = gravityAt(comet.x, comet.y);
           comet.vx += g.ax*SIM_H; comet.vy += g.ay*SIM_H;
@@ -635,7 +638,7 @@
           if(gateIdx >= course.gates.length){
             comet = null; runMsg = 'line followed &nbsp;&middot;&nbsp; that was the hard way &nbsp;&middot;&nbsp; esc to exit';
           } else if(hitsBody(comet.x, comet.y)){ failRun('crashed'); }
-          else if(Math.hypot(comet.x, comet.y) > course.outR){ failRun('lost to space'); }
+          else if(escaped(comet.x, comet.y, comet.vx, comet.vy, course.outR)){ failRun('lost to space'); }
         }
       } else simAcc = 0;
       syncHint();
@@ -843,6 +846,11 @@
     for(const p of PLANETS){ dx=p.wx-x; dy=p.wy-y; d2=dx*dx+dy*dy+SOFT; inv=G*(p.r*PLANET_MASS)/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv; }
     return {ax:ax, ay:ay};
   }
+  // past the boundary and still heading out = gone. no getting dragged back in.
+  // has to be directional: the slingshot anchor itself sits outside the last planet.
+  function escaped(x,y,vx,vy,escR){
+    return (x*x+y*y) > escR*escR && (x*vx + y*vy) > 0;
+  }
   function hitsBody(x,y){
     if(x*x+y*y < (SUN.r*0.95)*(SUN.r*0.95)) return true;
     for(const p of PLANETS){ const dx=p.wx-x, dy=p.wy-y; if(dx*dx+dy*dy < (p.r*1.15)*(p.r*1.15)) return true; }
@@ -857,7 +865,7 @@
       const g=gravityAt(x,y);
       vx+=g.ax*SIM_H; vy+=g.ay*SIM_H; x+=vx*SIM_H; y+=vy*SIM_H;
       if(hitsBody(x,y)) return null;
-      if(Math.hypot(x,y) > outR) return null;
+      if(escaped(x,y,vx,vy,outR)) return null;
       turned += Math.abs(Math.atan2(py*x-px*y, px*x+py*y));
       px=x; py=y; pts.push({x:x,y:y});
       if(turned >= target) return {pts:pts};
@@ -869,15 +877,15 @@
   function buildCourse(){
     let R0=0; for(const p of PLANETS) if(p.a>R0) R0=p.a;
     R0 *= 1.15;
-    const start={x:0,y:R0}, outR=R0*1.9, vc=Math.sqrt(G*SUN_MASS/R0);
+    const start={x:0,y:R0}, outR=R0*1.12, vc=Math.sqrt(G*SUN_MASS/R0);   // tight: no long outer arcs
     const inward = Math.atan2(-start.y, -start.x);
     for(let k=0;k<1500;k++){
       const sp  = vc*(0.45+Math.random()*1.05);
       const ang = inward + (Math.random()-0.5)*1.5;
-      const path = flyPath(start.x,start.y,Math.cos(ang)*sp,Math.sin(ang)*sp,3000,outR,Math.PI*1.6);
-      if(path && path.pts.length <= 2900){
+      const path = flyPath(start.x,start.y,Math.cos(ang)*sp,Math.sin(ang)*sp,6000,outR,Math.PI*1.6);
+      if(path && path.pts.length <= 5800){
         const gates=[];
-        for(let i=220;i<path.pts.length-40;i+=340) gates.push({x:path.pts[i].x, y:path.pts[i].y, hit:false});
+        for(let i=440;i<path.pts.length-80;i+=680) gates.push({x:path.pts[i].x, y:path.pts[i].y, hit:false});
         if(gates.length>=5){
           let viewR=0; for(const q of path.pts){ const r=Math.hypot(q.x,q.y); if(r>viewR) viewR=r; }
           return {start:start, pts:path.pts, gates:gates, outR:outR, viewR:viewR};
@@ -885,6 +893,17 @@
       }
     }
     return null;   // never found one, fall back to the free sandbox
+  }
+  // angry-birds dots: the live prediction for the current pull, same physics as the real run
+  function predictPath(vx,vy,steps){
+    let x=course.start.x, y=course.start.y; const out=[];
+    for(let i=0;i<steps;i++){
+      const g=gravityAt(x,y);
+      vx+=g.ax*SIM_H; vy+=g.ay*SIM_H; x+=vx*SIM_H; y+=vy*SIM_H;
+      if(hitsBody(x,y) || escaped(x,y,vx,vy,course.outR)) break;
+      if(i%22===0) out.push({x:x,y:y});
+    }
+    return out;
   }
   function courseScale(){ return Math.min(W,H) / (2*(course.viewR + 50)) * 0.96; }
   function courseHint(){
@@ -899,7 +918,7 @@
   // konami unlocks a little gravity sandbox: drag to launch a comet
   function enterGame(){
     writeHash(''); gameOn = true; bodies.length = 0; aim = null; aiming = false; firstPull = true;
-    comet = null; gateIdx = 0; tries = 0; runMsg = ''; lastHint = '';
+    comet = null; gateIdx = 0; tries = 0; runMsg = ''; lastHint = ''; traceT = 0;
     course = buildCourse();   // planets are frozen by now, so the line stays true all game
     if(course){ target.scale = courseScale(); target.cx = 0; target.cy = 0; }   // pull back to show the whole line
     hintEl.innerHTML = courseHint(); lastHint = courseHint();
@@ -926,17 +945,36 @@
   }
   function drawCourse(){
     const pts = course.pts;
-    ctx.strokeStyle='rgba(217,152,90,0.20)'; ctx.lineWidth=1.6/view.scale;
-    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-    for(let i=2;i<pts.length;i+=2) ctx.lineTo(pts[i].x, pts[i].y);
-    ctx.stroke();
+    const drawn = Math.max(1, Math.floor(Math.min(traceT,1) * (pts.length-1)));
 
-    for(let i=0;i<course.gates.length;i++){
+    ctx.setLineDash([7/view.scale, 9/view.scale]);
+    ctx.strokeStyle='rgba(217,152,90,0.30)'; ctx.lineWidth=1.7/view.scale;
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+    for(let i=3;i<drawn;i+=3) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if(traceT < 1){   // the tracer drawing the route
+      const h = pts[drawn];
+      ctx.beginPath(); ctx.arc(h.x, h.y, 4/view.scale, 0, Math.PI*2);
+      ctx.fillStyle='rgba(255,244,224,0.95)'; ctx.fill();
+    }
+
+    if(aim && aiming){   // small circles: where this pull actually goes
+      const pv = predictPath((aim.x0-aim.x1)*LAUNCH, (aim.y0-aim.y1)*LAUNCH, 2200);
+      for(let i=0;i<pv.length;i++){
+        ctx.beginPath(); ctx.arc(pv[i].x, pv[i].y, 2.4/view.scale, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255,250,238,'+(0.8 - 0.55*(i/Math.max(1,pv.length)))+')'; ctx.fill();
+      }
+    }
+
+    const gAlpha = Math.max(0, Math.min(1, (traceT-1)/0.4));
+    for(let i=0;i<course.gates.length && gAlpha>0;i++){
       const g = course.gates[i];
       ctx.beginPath(); ctx.arc(g.x, g.y, GATE_R, 0, Math.PI*2);
-      if(g.hit){ ctx.strokeStyle='rgba(217,152,90,0.9)';  ctx.lineWidth=2.4/view.scale; }
-      else if(i===gateIdx){ ctx.strokeStyle='rgba(233,228,220,0.6)'; ctx.lineWidth=1.8/view.scale; }
-      else { ctx.strokeStyle='rgba(233,228,220,0.22)'; ctx.lineWidth=1.1/view.scale; }
+      if(g.hit){ ctx.strokeStyle='rgba(217,152,90,'+(0.9*gAlpha)+')';  ctx.lineWidth=2.4/view.scale; }
+      else if(i===gateIdx){ ctx.strokeStyle='rgba(233,228,220,'+(0.6*gAlpha)+')'; ctx.lineWidth=1.8/view.scale; }
+      else { ctx.strokeStyle='rgba(233,228,220,'+(0.22*gAlpha)+')'; ctx.lineWidth=1.1/view.scale; }
       ctx.stroke();
     }
 
