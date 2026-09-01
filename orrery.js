@@ -347,7 +347,8 @@
     computeFit();
     buildBackground();
     buildConstellations();
-    if(mode==='system'){ target.scale=fitScale; target.cx=0; target.cy=0; }
+    if(gameOn && course){ target.scale=courseScale(); target.cx=0; target.cy=0; }
+    else if(mode==='system'){ target.scale=fitScale; target.cx=0; target.cy=0; }
     else if(focused){ target.scale = planetFocusScale(focused); }
   }
   window.addEventListener('resize', resize);
@@ -389,6 +390,9 @@
   const G=1, SUN_MASS=9e5, PLANET_MASS=1500, LAUNCH=0.5;
   let gameOn=false, aiming=false, aim=null, firstPull=true;
   const bodies=[];
+  const SOFT=2500, GATE_R=55, SIM_H=1/60, SIM_SPEED=3;   // fixed step, run at 3x so a try is ~15s
+  let simAcc=0;
+  let course=null, comet=null, gateIdx=0, tries=0, runMsg='', lastHint='';
 
   // hover-a-constellation-long-enough → list its stars
   const CONST_HOVER_R = 70, CONST_DWELL = 0.6;   // px radius, seconds
@@ -538,11 +542,13 @@
   }
 
   function isPlanetPaused(p){
+    if(gameOn) return true;   // course mode needs a static field or the line is a lie
     if(p===focused) return true;
     if(hoverObj && hoverObj.type==='planet' && hoverObj.obj===p) return true;
     return false;
   }
   function isMoonPaused(m){
+    if(gameOn) return true;
     if(m === openMoonObj) return true;
     return hoverObj && hoverObj.type==='moon' && hoverObj.obj===m;
   }
@@ -614,14 +620,30 @@
       }
     }
 
-    if(gameOn){
-      const soft = 2500;
+    if(gameOn && course){
+      if(comet){
+        simAcc += dt*SIM_SPEED;
+        let n = 0;
+        while(comet && simAcc >= SIM_H && n < 10){
+          simAcc -= SIM_H; n++;
+          const g = gravityAt(comet.x, comet.y);
+          comet.vx += g.ax*SIM_H; comet.vy += g.ay*SIM_H;
+          comet.x  += comet.vx*SIM_H; comet.y += comet.vy*SIM_H;
+          comet.trail.push({x:comet.x,y:comet.y}); if(comet.trail.length>140) comet.trail.shift();
+          const gt = course.gates[gateIdx];
+          if(gt && Math.hypot(comet.x-gt.x, comet.y-gt.y) < GATE_R){ gt.hit = true; gateIdx++; }
+          if(gateIdx >= course.gates.length){
+            comet = null; runMsg = 'line followed &nbsp;&middot;&nbsp; that was the hard way &nbsp;&middot;&nbsp; esc to exit';
+          } else if(hitsBody(comet.x, comet.y)){ failRun('crashed'); }
+          else if(Math.hypot(comet.x, comet.y) > course.outR){ failRun('lost to space'); }
+        }
+      } else simAcc = 0;
+      syncHint();
+    } else if(gameOn){
       for(let bi=bodies.length-1; bi>=0; bi--){
         const bd = bodies[bi];
-        let ax=0, ay=0, dx, dy, d2, inv;
-        dx=-bd.x; dy=-bd.y; d2=dx*dx+dy*dy+soft; inv=G*SUN_MASS/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv;
-        for(const p of PLANETS){ dx=p.wx-bd.x; dy=p.wy-bd.y; d2=dx*dx+dy*dy+soft; inv=G*(p.r*PLANET_MASS)/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv; }
-        bd.vx+=ax*dt; bd.vy+=ay*dt;
+        const g = gravityAt(bd.x, bd.y);
+        bd.vx+=g.ax*dt; bd.vy+=g.ay*dt;
         bd.x+=bd.vx*dt; bd.y+=bd.vy*dt;
         bd.trail.push({x:bd.x,y:bd.y}); if(bd.trail.length>36) bd.trail.shift();
         const r2 = bd.x*bd.x + bd.y*bd.y;
@@ -813,25 +835,127 @@
     }
   }
 
+
+  // one field, used by both the course generator and the live run
+  function gravityAt(x,y){
+    let ax=0, ay=0, dx, dy, d2, inv;
+    dx=-x; dy=-y; d2=dx*dx+dy*dy+SOFT; inv=G*SUN_MASS/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv;
+    for(const p of PLANETS){ dx=p.wx-x; dy=p.wy-y; d2=dx*dx+dy*dy+SOFT; inv=G*(p.r*PLANET_MASS)/(d2*Math.sqrt(d2)); ax+=dx*inv; ay+=dy*inv; }
+    return {ax:ax, ay:ay};
+  }
+  function hitsBody(x,y){
+    if(x*x+y*y < (SUN.r*0.95)*(SUN.r*0.95)) return true;
+    for(const p of PLANETS){ const dx=p.wx-x, dy=p.wy-y; if(dx*dx+dy*dy < (p.r*1.15)*(p.r*1.15)) return true; }
+    return false;
+  }
+  // fly a candidate through the frozen field, null if it dies or wanders off
+  // fly a candidate through the frozen field, null if it dies or wanders off.
+  // SIM_H must match the live run exactly or the drawn line can't actually be followed.
+  function flyPath(x,y,vx,vy,steps,outR,target){
+    const pts=[{x:x,y:y}]; let turned=0, px=x, py=y;
+    for(let i=0;i<steps;i++){
+      const g=gravityAt(x,y);
+      vx+=g.ax*SIM_H; vy+=g.ay*SIM_H; x+=vx*SIM_H; y+=vy*SIM_H;
+      if(hitsBody(x,y)) return null;
+      if(Math.hypot(x,y) > outR) return null;
+      turned += Math.abs(Math.atan2(py*x-px*y, px*x+py*y));
+      px=x; py=y; pts.push({x:x,y:y});
+      if(turned >= target) return {pts:pts};
+    }
+    return null;
+  }
+  // the line IS a solved launch, so it can always be followed.
+  // aim inward: diving through the planets is where the slingshots and the danger are.
+  function buildCourse(){
+    let R0=0; for(const p of PLANETS) if(p.a>R0) R0=p.a;
+    R0 *= 1.15;
+    const start={x:0,y:R0}, outR=R0*1.9, vc=Math.sqrt(G*SUN_MASS/R0);
+    const inward = Math.atan2(-start.y, -start.x);
+    for(let k=0;k<1500;k++){
+      const sp  = vc*(0.45+Math.random()*1.05);
+      const ang = inward + (Math.random()-0.5)*1.5;
+      const path = flyPath(start.x,start.y,Math.cos(ang)*sp,Math.sin(ang)*sp,3000,outR,Math.PI*1.6);
+      if(path && path.pts.length <= 2900){
+        const gates=[];
+        for(let i=220;i<path.pts.length-40;i+=340) gates.push({x:path.pts[i].x, y:path.pts[i].y, hit:false});
+        if(gates.length>=5){
+          let viewR=0; for(const q of path.pts){ const r=Math.hypot(q.x,q.y); if(r>viewR) viewR=r; }
+          return {start:start, pts:path.pts, gates:gates, outR:outR, viewR:viewR};
+        }
+      }
+    }
+    return null;   // never found one, fall back to the free sandbox
+  }
+  function courseScale(){ return Math.min(W,H) / (2*(course.viewR + 50)) * 0.96; }
+  function courseHint(){
+    if(!course) return 'comet sandbox &nbsp;&middot;&nbsp; pull back &amp; release to launch &nbsp;&middot;&nbsp; esc to exit';
+    if(runMsg) return runMsg;
+    return 'follow the line &nbsp;&middot;&nbsp; ' + gateIdx + '/' + course.gates.length + ' &nbsp;&middot;&nbsp; tries ' + tries + ' &nbsp;&middot;&nbsp; esc to exit';
+  }
+  function syncHint(){ const h=courseHint(); if(h!==lastHint){ hintEl.innerHTML=h; lastHint=h; } }
+  function resetRun(){ gateIdx=0; for(const g of course.gates) g.hit=false; }
+  function failRun(why){ comet=null; tries++; resetRun(); runMsg = why + ' &nbsp;&middot;&nbsp; pull back to try again'; }
+
   // konami unlocks a little gravity sandbox: drag to launch a comet
   function enterGame(){
     writeHash(''); gameOn = true; bodies.length = 0; aim = null; aiming = false; firstPull = true;
-    hintEl.innerHTML = 'comet sandbox &nbsp;·&nbsp; pull back &amp; release to launch &nbsp;·&nbsp; esc to exit';
+    comet = null; gateIdx = 0; tries = 0; runMsg = ''; lastHint = '';
+    course = buildCourse();   // planets are frozen by now, so the line stays true all game
+    if(course){ target.scale = courseScale(); target.cx = 0; target.cy = 0; }   // pull back to show the whole line
+    hintEl.innerHTML = courseHint(); lastHint = courseHint();
     hintEl.style.opacity = '0.85';
   }
   function exitGame(){
     gameOn = false; bodies.length = 0; aim = null; aiming = false;
+    course = null; comet = null; runMsg = ''; lastHint = '';
+    target.scale = fitScale; target.cx = 0; target.cy = 0;
     hintEl.innerHTML = hintDefault;
     hintEl.style.opacity = (mode==='system') ? '0.7' : '0';
   }
   function launchBody(){
     if(!aim) return;
+    firstPull = false;   // teaching arrow only shows until the first launch
+    if(course){          // one comet, from the anchor, opposite the pull
+      comet = { x:course.start.x, y:course.start.y, vx:(aim.x0-aim.x1)*LAUNCH, vy:(aim.y0-aim.y1)*LAUNCH, trail:[] };
+      resetRun(); runMsg = '';
+      return;
+    }
     // slingshot: fling opposite the pull-back
     bodies.push({ x:aim.x0, y:aim.y0, vx:(aim.x0-aim.x1)*LAUNCH, vy:(aim.y0-aim.y1)*LAUNCH, trail:[] });
     if(bodies.length > 40) bodies.shift();
-    firstPull = false;   // teaching arrow only shows until the first launch
   }
+  function drawCourse(){
+    const pts = course.pts;
+    ctx.strokeStyle='rgba(217,152,90,0.20)'; ctx.lineWidth=1.6/view.scale;
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+    for(let i=2;i<pts.length;i+=2) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+
+    for(let i=0;i<course.gates.length;i++){
+      const g = course.gates[i];
+      ctx.beginPath(); ctx.arc(g.x, g.y, GATE_R, 0, Math.PI*2);
+      if(g.hit){ ctx.strokeStyle='rgba(217,152,90,0.9)';  ctx.lineWidth=2.4/view.scale; }
+      else if(i===gateIdx){ ctx.strokeStyle='rgba(233,228,220,0.6)'; ctx.lineWidth=1.8/view.scale; }
+      else { ctx.strokeStyle='rgba(233,228,220,0.22)'; ctx.lineWidth=1.1/view.scale; }
+      ctx.stroke();
+    }
+
+    if(comet){
+      const t = comet.trail;
+      for(let i=1;i<t.length;i++){
+        ctx.strokeStyle='rgba(255,248,232,'+((i/t.length)*0.6)+')'; ctx.lineWidth=1.5/view.scale;
+        ctx.beginPath(); ctx.moveTo(t[i-1].x,t[i-1].y); ctx.lineTo(t[i].x,t[i].y); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(comet.x, comet.y, 3.4/view.scale, 0, Math.PI*2);
+      ctx.fillStyle='rgba(255,250,238,0.95)'; ctx.fill();
+    }
+
+    ctx.beginPath(); ctx.arc(course.start.x, course.start.y, 4.5/view.scale, 0, Math.PI*2);
+    ctx.fillStyle = comet ? 'rgba(255,250,238,0.35)' : 'rgba(255,250,238,0.95)'; ctx.fill();
+  }
+
   function drawSandbox(){
+    if(course) drawCourse();
     for(const bd of bodies){
       const t = bd.trail;
       for(let i=1;i<t.length;i++){
@@ -1241,7 +1365,9 @@
   });
 
   canvas.addEventListener('pointerdown', e=>{
-    if(gameOn){ const w=toWorld(e.clientX,e.clientY,par.planet.x,par.planet.y); aim={x0:w.x,y0:w.y,x1:w.x,y1:w.y}; aiming=true; return; }
+    if(gameOn){ const w=toWorld(e.clientX,e.clientY,par.planet.x,par.planet.y);
+      const a = course ? course.start : w;   // course mode has a fixed slingshot
+      aim={x0:a.x,y0:a.y,x1:w.x,y1:w.y}; aiming=true; return; }
     down = {x:e.clientX, y:e.clientY, t:performance.now()};
     idleT = 0;
     if(nudgeT > 0){ nudgeT = 0; hintEl.innerHTML = hintDefault; }
